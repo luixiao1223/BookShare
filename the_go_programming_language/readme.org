@@ -14,7 +14,7 @@
 | Chapter                              | reporter   |       time |
 |--------------------------------------+------------+------------|
 | 1. Tutorial                          | TonyHuiHUI | 2019-06-09 |
-| 2. Program Structure                 |            |      20:30 |
+| 2. Program Structure                 | TonyHuiHUI |      20:30 |
 |--------------------------------------+------------+------------|
 | 3. Basic Data Types                  |            |            |
 | 4. Composite Types                   |            |            |
