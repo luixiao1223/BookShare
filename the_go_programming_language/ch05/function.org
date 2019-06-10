@@ -165,6 +165,47 @@
 
 * 匿名函数
 
+#+BEGIN_SRC go
+  strings.map(func(r rune) rune {return r+1}, "HAL-9000")
+#+END_SRC
+
+** 闭包的概念
+
+#+BEGIN_SRC go
+  func squares() func() int {
+    var x int
+    return func() int {
+      x++
+      return x * x
+    }
+  }
+
+  func main() {
+    f := squares()
+    fmt.Println(f()) // "1"
+    fmt.Println(f()) // "4"
+    fmt.Println(f()) // "9"
+    fmt.Println(f()) // "16"
+  }
+#+END_SRC
+
+** 容易出错的地方
+
+#+BEGIN_SRC go
+  var rmdirs []func()
+  for _, d := range tempDirs() {
+    dir := d               // NOTE: necessary!
+    os.MkdirAll(dir, 0755) // creates parent directories too
+    rmdirs = append(rmdirs, func() {
+      os.RemoveAll(dir)
+    })
+  }
+
+  // ...do some work...
+  for _, rmdir := range rmdirs {
+    rmdir() // clean up
+  }
+#+END_SRC
 
 
 
