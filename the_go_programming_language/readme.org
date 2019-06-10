@@ -9,11 +9,17 @@
 
 ** reporters
 
+* resources
+
+** 源代码
+
+书籍源代码：https://github.com/adonovan/gopl.io
+
 * 章节分配
 
 | Chapter                              | reporter   |       time |
 |--------------------------------------+------------+------------|
-| 1. Tutorial                          | TonyHuiHUI | 2019-06-09 |
+| 1. Tutorial                          | TonyHuiHUI | 2019-06-16 |
 | 2. Program Structure                 | TonyHuiHUI |      20:30 |
 |--------------------------------------+------------+------------|
 | 3. Basic Data Types                  |            |            |
