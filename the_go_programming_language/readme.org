@@ -45,7 +45,7 @@ The Go Programming Language (Addison-Wesley Professional Computing Series)
 |--------------------------------------+------------+------------|
 | 9. Concurrency with Shared Variables |            |            |
 |--------------------------------------+------------+------------|
-| 10. Pack ages and the Go Tool        |            |            |
+| 10. Packages and the Go Tool         |            |            |
 |--------------------------------------+------------+------------|
 | 11. Testing                          |            |            |
 |--------------------------------------+------------+------------|
