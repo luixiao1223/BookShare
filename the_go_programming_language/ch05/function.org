@@ -154,7 +154,7 @@
   var f func(int) int
 #+END_SRC
 
-注意，函数变量之间不可以比较。所以不能把函数变量作为map的key值。
+注意，函数变量之间不可以比较。所以不能把函数变量作为map的key值。但是函数类型可以和nil比较。
 
 作为参数的函数变量
 #+BEGIN_SRC go
@@ -190,7 +190,21 @@
 #+END_SRC
 
 ** 容易出错的地方
+*** wrong
 
+#+BEGIN_SRC go
+  var rmdirs []func()
+  for _, dir := range tempDirs() {
+
+    os.MkdirAll(dir, 0755)
+    rmdirs = append(rmdirs, func() {
+      os.RemoveAll(dir) // NOTE: incorrect!
+    })
+  }
+
+#+END_SRC
+
+*** right
 #+BEGIN_SRC go
   var rmdirs []func()
   for _, d := range tempDirs() {
@@ -207,6 +221,243 @@
   }
 #+END_SRC
 
+* 变长函数
 
+#+BEGIN_SRC go
+  func sum(vals ...int) int {
+    total := 0
+    for _, val := range vals {
+      total += val
+    }
+    return total
+  }
+#+END_SRC
 
+** 等价调用
+
+#+BEGIN_SRC go
+  fmt.Println(sum(1, 2, 3, 4)) // "10"
+  // 等价的调用
+  values := []int{1, 2, 3, 4}
+  fmt.Println(sum(values...)) // "10"
+#+END_SRC
+
+** 不同类型
+
+#+BEGIN_SRC go
+  func f(...int) {}
+  func g([]int) {}
+#+END_SRC
+
+* 延迟函数
+
+#+BEGIN_SRC go
+  func title(url string) error {
+    resp, err := http.Get(url)
+    if err != nil {
+      return err
+    }
+    // Check Content-Type is HTML (e.g., "text/html; charset=utf-8").
+    ct := resp.Header.Get("Content-Type")
+    if ct != "text/html" && !strings.HasPrefix(ct, "text/html;") {
+      resp.Body.Close() // 调用了一次
+      return fmt.Errorf("%s has type %s, not text/html", url, ct)
+    }
+    doc, err := html.Parse(resp.Body)
+    resp.Body.Close() // 调用了一次
+    if err != nil {
+      return fmt.Errorf("parsing %s as HTML: %v", url, err)
+    }
+
+    visitNode := func(n *html.Node) {
+      if n.Type == html.ElementNode && n.Data == "title" &&
+        n.FirstChild != nil {
+        fmt.Println(n.FirstChild.Data)
+      }
+    }
+    forEachNode(doc, visitNode, nil)
+    return nil
+  }
+#+END_SRC
+
+** defer
+
+#+BEGIN_SRC go
+  func title(url string) error {
+    resp, err := http.Get(url)
+    if err != nil {
+      return err
+    }
+    defer resp.Body.Close()
+    ct := resp.Header.Get("Content-Type")
+    if ct != "text/html" && !strings.HasPrefix(ct, "text/html;") {
+      return fmt.Errorf("%s has type %s, not text/html", url, ct)
+    }
+    doc, err := html.Parse(resp.Body)
+    if err != nil {
+      return fmt.Errorf("parsing %s as HTML: %v", url, err)
+    }
+    // ...print doc's title element...
+    return nil
+  }
+#+END_SRC
+
+** 注意
+
+1. defer 没有限制使用次数，执行的时候以调研defer的顺序倒序执行。
+2. defer 语句的求值是在执行defer语句的时候执行。
+3. defer 的执行在return语句之后。
+
+** 改变返回值结果
+
+#+BEGIN_SRC go
+  func double(x int) (result int) {
+    defer func() { fmt.Printf("double(%d) = %d\n", x, result) }()// return 后执行打印操作
+    return x + x
+  }
+  _ = double(4)
+  // Output:
+  // "double(4) = 8"
+#+END_SRC
+
+#+BEGIN_SRC go
+  func triple(x int) (result int) {
+    defer func() { result += x }()
+    return double(x)
+  }
+  fmt.Println(triple(4)) // "12" 改变了返回值
+#+END_SRC
+
+** 文件描述符应用
+
+*** 可能会耗尽文件描述符资源
+
+#+BEGIN_SRC go
+  for _, filename := range filenames {
+    f, err := os.Open(filename)
+    if err != nil {
+      return err
+    }
+    defer f.Close() // NOTE: risky; could run out of file descriptors
+    // ...process f...
+  }
+
+#+END_SRC
+
+*** 更好的方法
+
+#+BEGIN_SRC go
+  for _, filename := range filenames {
+    if err := doFile(filename); err != nil {
+      return err
+    }
+  }
+
+  func doFile(filename string) error {
+    f, err := os.Open(filename)
+    if err != nil {
+      return err
+    }
+    defer f.Close()
+    // ...process f...
+  }
+#+END_SRC
+
+* 宕机(panic)
+
+** 注意
+
+1. 宕机会导致程序退出，只有在十分严重的错误情况下才可以宕机。
+2. 当发生宕机时，所有的延迟函数以倒序执行，直到回到main函数
+
+   #+BEGIN_SRC go
+     func main() {
+       f(3)
+     }
+
+     func f(x int) {
+       fmt.Printf("f(%d)\n", x+0/x) // panics if x == 0
+       defer fmt.Printf("defer %d\n", x)
+       f(x - 1)
+     }
+   #+END_SRC
+   
+   outputs
+
+   #+BEGIN_SRC sh
+     f(3)
+     f(2)
+     f(1)
+     defer 1
+     defer 2
+     defer 3
+   #+END_SRC
+
+** runtime
+
+runtime包提供了转储栈的方法使程序员可以诊断错误。
+
+#+BEGIN_SRC go
+  gopl.io/ch5/defer2
+
+  func main() {
+    defer printStack()
+    f(3)
+  }
+
+  func printStack() {
+    var buf [4096]byte
+    n := runtime.Stack(buf[:], false)
+    os.Stdout.Write(buf[:n])
+  }
+#+END_SRC
+
+为什么可以打印出栈，因为go语言的宕机机制可以让延迟函数的执行在栈清理之前调用
+
+* 恢复
+
+recover可以劫持宕机，然后处理之后恢复运行
+
+#+BEGIN_SRC go
+  func Parse(input string) (s *Syntax, err error) {
+    defer func() {
+      if p := recover(); p != nil {
+        err = fmt.Errorf("internal error: %v", p) // 这里就会恢复，程序不会退出
+      }
+    }()
+    // ...parser... 加入在这里发生宕机
+  }
+#+END_SRC
+
+#+BEGIN_SRC go
+  func soleTitle(doc *html.Node) (title string, err error) {
+    type bailout struct{}
+    defer func() {
+      switch p := recover(); p {
+      case nil:
+        // no panic
+      case bailout{}:
+        // "expected" panic
+        err = fmt.Errorf("multiple title elements")
+      default:
+        panic(p) // unexpected panic; carry on panicking
+      }
+    }() // 定义了一个函数并调用之这是个匿名函数（延迟调用）
+
+    // Bail out of recursion if we find more than one non-empty title.
+    forEachNode(doc, func(n *html.Node) {
+      if n.Type == html.ElementNode && n.Data == "title" &&
+        n.FirstChild != nil {
+        if title != "" {
+          panic(bailout{}) // 宕机发生地
+        }
+        title = n.FirstChild.Data
+      }
+    }, nil)
+    if title == "" {
+      return "", fmt.Errorf("no title element")
+    }
+    return title, nil
+  }
+#+END_SRC
 
