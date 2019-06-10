@@ -1,0 +1,171 @@
+#+TITLE: 函数
+
+* 函数声明
+
+#+BEGIN_SRC go
+  func name(parameter-list) (result-list) {
+    body
+  }
+#+END_SRC
+
+** example
+
+#+BEGIN_SRC go
+  func hypot(x,y float64) float64 {
+    return math.Sqrt(x*x + y*y)
+  }
+#+END_SRC
+
+** 同类型可以放在一起
+
+#+BEGIN_SRC go
+  func f(i, j, k int, s, t string) {/*...*/}
+  func f(i int, j int, k int, s string, t string){/*...*/}
+#+END_SRC
+
+** 需要注意点
+
+1. go 语言没有默认参数的概念，也不能指定参数名
+2. 函数类型（具有相同形参列表和返回列表的函数是同种类型）
+3. 没有函数体的函数声明，可能是来自于go语言之外的语言实现的。
+   #+BEGIN_SRC go
+     package math
+     func sin(x float64) float64 // 使用汇编语言实现
+   #+END_SRC
+
+* 递归
+
+* 多值返回
+
+** 忽略参数
+
+#+BEGIN_SRC go
+  links, _ := findlines(url)
+#+END_SRC
+
+** 传递参数
+
+#+BEGIN_SRC go
+  func findLinksLog(url string) ([]string, error) {
+    log.Printf("findLinks %s", url)
+    return findLinks(url)
+  }
+#+END_SRC
+
+** 有的函数也接受多返回值函数，作为多参数
+
+#+BEGIN_SRC go
+  log.Println(findLinks(url))
+  // 和下面的调用等价
+  links, err := findLinks(url)
+  log.Println(links, err)
+#+END_SRC
+
+** 裸返回
+#+BEGIN_SRC go
+  func CountWordsAndImages(url string) (words, images int, err error) {
+    resp, err := http.Get(url)
+    if err != nil {
+      return
+    }
+    doc, err := html.Parse(resp.Body)
+    resp.Body.Close()
+    if err != nil {
+      err = fmt.Errorf("parsing HTML: %s", err)
+      return
+    }
+    //(这种匿名返回，会让人很难受，让然误解。所以尽量少用这种返回)
+    words, images = countWordsAndImages(doc)
+    return
+  }
+
+  func countWordsAndImages(n *html.Node) (words, images int) { /* ... */ }
+#+END_SRC
+
+* 错误
+
+这里主要讲错误的处理策略
+
+** 直接向上一层调用者汇报
+
+#+BEGIN_SRC go
+  resp, err := http.Get(url)
+  if err != nil {
+    return nil, err
+  }
+#+END_SRC
+
+** 重试若干次再报错退出
+
+#+BEGIN_SRC go
+  func WaitForServer(url string) error {
+    const timeout = 1 * time.Minute
+    deadline := time.Now().Add(timeout)
+    for tries := 0; time.Now().Before(deadline); tries++ {
+      _, err := http.Head(url)
+      if err == nil {
+        return nil // success
+      }
+      log.Printf("server not responding (%s); retrying...", err)
+      time.Sleep(time.Second << uint(tries)) // exponential back-off
+    }
+    return fmt.Errorf("server %s failed to respond after %s", url, timeout)
+  }
+#+END_SRC
+
+** 直接终止程序
+
+#+BEGIN_SRC go
+  // (In function main.)
+  if err := WaitForServer(url); err != nil {
+    fmt.Fprintf(os.Stderr, "Site is down: %v\n", err)
+    os.Exit(1)
+  }
+#+END_SRC
+
+应该由主程序来做。不应该由库函数来做。库函数应该报告错误就行了。
+
+#+BEGIN_SRC go
+  log.Fatalf // 可以实现日志输出
+#+END_SRC
+
+** 某些情况下，只是记录错误信息，然后继续运行
+
+#+BEGIN_SRC go
+  if err := WaitForServer(url); err != nil {
+    log.Fatalf("Site is down: %v\n", err)
+  }
+#+END_SRC
+
+** 直接忽略掉错误
+
+#+BEGIN_SRC go
+  dir, err := ioutil.TempDir("", "scratch")
+  if err != nil {
+    return fmt.Errorf("failed to create temp dir: %v", err)
+  }
+  // ...use temp dir...
+  os.RemoveAll(dir) // 这个函数可能会错误，但是这里忽略了处理。
+#+END_SRC
+
+* 函数变量
+
+#+BEGIN_SRC go
+  var f func(int) int
+#+END_SRC
+
+注意，函数变量之间不可以比较。所以不能把函数变量作为map的key值。
+
+作为参数的函数变量
+#+BEGIN_SRC go
+  func forEachNode(n *html.Node, pre, post func(n *html.Node) string){
+    //body
+  }
+#+END_SRC
+
+* 匿名函数
+
+
+
+
+
