@@ -9,10 +9,11 @@
 * 参与人
 
 ** reporters
-| Reporter   | Chapters |
-|------------+----------|
-| TonyHuiHUI |      1-2 |
-|            |          |
+| Reporter    | Chapters |
+|-------------+----------|
+| TonyHuiHUI  |      1-2 |
+|             |          |
+| luixiao1223 |        5 |
 
 * resources
 
