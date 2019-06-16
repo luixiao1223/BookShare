@@ -8,13 +8,13 @@
      :CUSTOM_ID: hello-world
      :END:
 
-#+BEGIN_EXAMPLE
+#+begin_src go
     package main   => 包
     import "fmt"       => 引入包      
     func main() { 
     fmt.Println （” Hello ，世界”）
     }
-#+END_EXAMPLE
+#+end_src
 
 运行
 
@@ -98,7 +98,7 @@ var f, err ＝ os.Open(name)
 
 - Go 不允许存在无用的临时变量，不然会出现编译错误
 
-#+BEGIN_EXAMPLE
+#+begin_src go
     package main 
     import ( 
     "fmt"
@@ -112,9 +112,9 @@ var f, err ＝ os.Open(name)
     } 
     fmt.P intln(s)
     }
-#+END_EXAMPLE
+#+end_src
 
-#+BEGIN_EXAMPLE
+#+begin_src go
     package main
 
     import (
@@ -135,16 +135,16 @@ var f, err ＝ os.Open(name)
         }
         fmt.Println("some", b, cmd, a)
     }
-#+END_EXAMPLE
+#+end_src
 
 ***** 常量（ const ）
       :PROPERTIES:
       :CUSTOM_ID: 常量-const
       :END:
 
-#+BEGIN_EXAMPLE
+#+begin_src go
     const boilingF=212.0
-#+END_EXAMPLE
+#+end_src
 
 ***** 类型（ type ）
       :PROPERTIES:
@@ -153,21 +153,21 @@ var f, err ＝ os.Open(name)
 
 type name underlying-type
 
-#+BEGIN_EXAMPLE
+#+begin_src go
     type Celsius float64
-#+END_EXAMPLE
+#+end_src
 
 ***** 函数（ func）
       :PROPERTIES:
       :CUSTOM_ID: 函数-func
       :END:
 
-#+BEGIN_EXAMPLE
+#+begin_src go
     func (f Fahrenheit) String() string { 
     return fmt.Sp intf （” %g ”， f) 
         
     }
-#+END_EXAMPLE
+#+end_src
 
 **** 指针
      :PROPERTIES:
@@ -181,12 +181,12 @@ type name underlying-type
      :CUSTOM_ID: new函数
      :END:
 
-#+BEGIN_EXAMPLE
+#+begin_src go
     p := new(int) //*int 类型的 ，指向未命名的 int 变量
     fmt.Println p) // 输出＂ 0"
     *p = 2 //把未命名的 
     fmt.Println(*p) // 输出”2"
-#+END_EXAMPLE
+#+end_src
 
 **** 变量生命周期
      :PROPERTIES:
@@ -200,10 +200,10 @@ type name underlying-type
 
 - 多重赋值
 
-#+BEGIN_EXAMPLE
+#+begin_src go
     x, y = y, x 
     a[i], a[j] = a[j], a[i]
-#+END_EXAMPLE
+#+end_src
 
 **** 包、文件、导入
      :PROPERTIES:
@@ -217,14 +217,14 @@ type name underlying-type
      :CUSTOM_ID: 包初始化
      :END:
 
-#+BEGIN_EXAMPLE
+#+begin_src go
     func init() { /* ...*/｝
-#+END_EXAMPLE
+#+end_src
 
 init 函数不能被调用和被引用，另一方面，它也是普通的函数
 在每个文件里，当程序启动的时候，init函数按照它们声明的顺序自动执行。
 
-#+BEGIN_EXAMPLE
+#+begin_src go
     package some
 
     import "fmt"
@@ -244,9 +244,9 @@ init 函数不能被调用和被引用，另一方面，它也是普通的函数
         some()
         init() // some/some.go:18:2: undefined: init Error!!!
     }
-#+END_EXAMPLE
+#+end_src
 
-#+BEGIN_EXAMPLE
+#+begin_src go
     package main
 
     import (
@@ -256,18 +256,21 @@ init 函数不能被调用和被引用，另一方面，它也是普通的函数
     func main() {
         some.Print()
     }
-#+END_EXAMPLE
+#+end_src
 
 **** 作用域
      :PROPERTIES:
      :CUSTOM_ID: 作用域
      :END:
 
-#+BEGIN_EXAMPLE
+#+begin_src go
     if f, err := cs.Open （fname); err！＝ nil ｛// 编译错误 未使用
     return err 
     }
 
     f. Stat() ／／ 编译错误：未定义
     f. Close() ／／ 编译错误：未定义
-#+END_EXAMPLE
+#+end_src
+
+
+
