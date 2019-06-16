@@ -1,0 +1,273 @@
+** ch01
+   :PROPERTIES:
+   :CUSTOM_ID: ch01
+   :END:
+
+**** hello world
+     :PROPERTIES:
+     :CUSTOM_ID: hello-world
+     :END:
+
+#+BEGIN_EXAMPLE
+    package main   => 包
+    import "fmt"       => 引入包      
+    func main() { 
+    fmt.Println （” Hello ，世界”）
+    }
+#+END_EXAMPLE
+
+运行
+
+$ go run helloworld.go
+
+$ go build helloworld.go
+
+*** 命令行参数
+    :PROPERTIES:
+    :CUSTOM_ID: 命令行参数
+    :END:
+
+os.Args
+
+for循环
+
+for是 Go 里面的唯一循环语句
+
+for initialization; condition; post {
+
+}
+
+for condition {
+
+}
+
+for {
+
+}
+
+** ch02
+   :PROPERTIES:
+   :CUSTOM_ID: ch02
+   :END:
+
+**** 名称
+     :PROPERTIES:
+     :CUSTOM_ID: 名称
+     :END:
+
+名称的开头是一个字母（Unicode中的字符即可）或下划线，后面可以跟任意数字和下划线，并区分大小写。
+
+实体第 个字母的大小写决定其可见性是否跨包
+如果名称以大写字母的开头，它是导出的，意味着它对包外是可见和可访问的，可以被自己包之外的其他程序所引用，像fmt包中的Printf包名本身总是由小写字母组成。
+
+关键字：break default func inte face select case defer go map struct ch
+an else goto package switch con st fallthrough if range type continue
+for import return var
+
+常量：true false iota nil
+
+类型： int int8 int16 int32 int64 uint uint8 uint16 uint32 uint64
+uintptr float32 float64 complex128 complex64 bool byte rune string error
+
+函数： make len cap new append copy close delete complex real imag panic
+recove
+
+**** 声明
+     :PROPERTIES:
+     :CUSTOM_ID: 声明
+     :END:
+
+***** 变量var
+      :PROPERTIES:
+      :CUSTOM_ID: 变量var
+      :END:
+
+var name type = expression
+
+var i = 3
+
+var i int
+
+var i int = 3
+
+- 变量可以通过调用返回多个值的函数进行初始化：
+
+var f, err ＝ os.Open(name)
+
+- 短变量 name := expression //fixme
+
+- Go 不允许存在无用的临时变量，不然会出现编译错误
+
+#+BEGIN_EXAMPLE
+    package main 
+    import ( 
+    "fmt"
+    "os" 
+    )
+    func main() { 
+    s, sep : =””, 
+    for_, arg ：＝range os.Args[l:) { 
+    s += sep + 
+    sep = ""
+    } 
+    fmt.P intln(s)
+    }
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE
+    package main
+
+    import (
+        "fmt"
+        "log"
+        "os"
+    )
+
+    var cmd string = "string"
+
+    func main() {
+        cmd, b := 1, 2 // 覆盖了包体外面的额string 类型的string, 此处的cmd编程了int类型
+        a, b := "sring", 1
+        a, c := 1, 2 //会报错，因为a是string类型，而不能复制为int类型。
+        _, err := os.Getwd()
+        if err != nil {
+            log.Fatal("os.Getwe failed: %v", err)
+        }
+        fmt.Println("some", b, cmd, a)
+    }
+#+END_EXAMPLE
+
+***** 常量（ const ）
+      :PROPERTIES:
+      :CUSTOM_ID: 常量-const
+      :END:
+
+#+BEGIN_EXAMPLE
+    const boilingF=212.0
+#+END_EXAMPLE
+
+***** 类型（ type ）
+      :PROPERTIES:
+      :CUSTOM_ID: 类型-type
+      :END:
+
+type name underlying-type
+
+#+BEGIN_EXAMPLE
+    type Celsius float64
+#+END_EXAMPLE
+
+***** 函数（ func）
+      :PROPERTIES:
+      :CUSTOM_ID: 函数-func
+      :END:
+
+#+BEGIN_EXAMPLE
+    func (f Fahrenheit) String() string { 
+    return fmt.Sp intf （” %g ”， f) 
+        
+    }
+#+END_EXAMPLE
+
+**** 指针
+     :PROPERTIES:
+     :CUSTOM_ID: 指针
+     :END:
+
+- 函数返回局部变量的地址是非常安全的
+
+**** new函数
+     :PROPERTIES:
+     :CUSTOM_ID: new函数
+     :END:
+
+#+BEGIN_EXAMPLE
+    p := new(int) //*int 类型的 ，指向未命名的 int 变量
+    fmt.Println p) // 输出＂ 0"
+    *p = 2 //把未命名的 
+    fmt.Println(*p) // 输出”2"
+#+END_EXAMPLE
+
+**** 变量生命周期
+     :PROPERTIES:
+     :CUSTOM_ID: 变量生命周期
+     :END:
+
+**** 赋值
+     :PROPERTIES:
+     :CUSTOM_ID: 赋值
+     :END:
+
+- 多重赋值
+
+#+BEGIN_EXAMPLE
+    x, y = y, x 
+    a[i], a[j] = a[j], a[i]
+#+END_EXAMPLE
+
+**** 包、文件、导入
+     :PROPERTIES:
+     :CUSTOM_ID: 包文件导入
+     :END:
+
+- 导入一个没有被引用的包。会触发编译错误
+
+**** 包初始化
+     :PROPERTIES:
+     :CUSTOM_ID: 包初始化
+     :END:
+
+#+BEGIN_EXAMPLE
+    func init() { /* ...*/｝
+#+END_EXAMPLE
+
+init 函数不能被调用和被引用，另一方面，它也是普通的函数
+在每个文件里，当程序启动的时候，init函数按照它们声明的顺序自动执行。
+
+#+BEGIN_EXAMPLE
+    package some
+
+    import "fmt"
+
+    var a = 1
+
+    func init() {
+        a = a + 1
+        fmt.Println(a)
+    }
+
+    func some() {
+        fmt.Println("some")
+    }
+
+    func Print() {
+        some()
+        init() // some/some.go:18:2: undefined: init Error!!!
+    }
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE
+    package main
+
+    import (
+        "./some"
+    )
+
+    func main() {
+        some.Print()
+    }
+#+END_EXAMPLE
+
+**** 作用域
+     :PROPERTIES:
+     :CUSTOM_ID: 作用域
+     :END:
+
+#+BEGIN_EXAMPLE
+    if f, err := cs.Open （fname); err！＝ nil ｛// 编译错误 未使用
+    return err 
+    }
+
+    f. Stat() ／／ 编译错误：未定义
+    f. Close() ／／ 编译错误：未定义
+#+END_EXAMPLE
