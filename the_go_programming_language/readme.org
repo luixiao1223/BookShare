@@ -22,7 +22,7 @@
 | rythmE      |       12 |
 | luixiao1223 |       13 |
 
-* 书籍资源
+* 学习资源
 
 ** 书籍
 
@@ -31,6 +31,10 @@ The Go Programming Language (Addison-Wesley Professional Computing Series)
 ** 源代码
 
 书籍源代码：https://github.com/adonovan/gopl.io
+
+** go by example
+
+https://gobyexample.com/
 
 * 章节分配
 
