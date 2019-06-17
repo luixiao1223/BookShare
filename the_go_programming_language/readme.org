@@ -7,8 +7,8 @@
 
 * 参与人
 
-** reporters
-| Reporter    | Chapters |
+** speakers
+| Speaker    | Chapters |
 |-------------+----------|
 | TonyHuiHUI  |      1-2 |
 | Sevenpin    |      3-4 |
@@ -34,7 +34,7 @@ The Go Programming Language (Addison-Wesley Professional Computing Series)
 
 * 章节分配
 
-| Chapter                              | reporter   |       time |
+| Chapter                              | speaker   |       time |
 |--------------------------------------+------------+------------|
 | 1. Tutorial                          | TonyHuiHUI | 2019-06-16 |
 | 2. Program Structure                 | TonyHuiHUI |      20:00 |
