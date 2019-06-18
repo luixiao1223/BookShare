@@ -6,22 +6,6 @@
 ** To
 
 * 参与人
-
-** speakers
-| Speaker     | Chapters |
-|-------------+----------|
-| TonyHuiHUI  |      1-2 |
-| Sevenpin    |      3-4 |
-| luixiao1223 |        5 |
-| rythmE      |        6 |
-| TonyHuiHUI  |        7 |
-| luixiao1223 |        8 |
-| rythmE      |        9 |
-| Sevenpin    |       10 |
-| TonyHuiHUI  |       11 |
-| rythmE      |       12 |
-| luixiao1223 |       13 |
-
 * 学习资源
 
 ** 书籍
