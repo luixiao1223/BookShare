@@ -1,11 +1,11 @@
 #+TITLE: The Go Programming Language
 
 * 时间
-** From 
-2019-06-16
-** To
 
-* 参与人
+|       From | To |
+|------------+----|
+| 2019-06-16 |    |
+
 * 学习资源
 
 ** 书籍
