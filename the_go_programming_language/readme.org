@@ -20,6 +20,10 @@ The Go Programming Language (Addison-Wesley Professional Computing Series)
 
 https://gobyexample.com/
 
+** go语言的语言描述
+
+https://golang.org/ref/spec#unicode_letter
+
 * 章节分配
 
 | Chapter                              | speaker     |       time |
