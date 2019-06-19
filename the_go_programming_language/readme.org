@@ -22,7 +22,7 @@ https://gobyexample.com/
 
 ** go语言的语言描述
 
-https://golang.org/ref/spec#unicode_letter
+https://golang.org/ref/spec
 
 * 章节分配
 
