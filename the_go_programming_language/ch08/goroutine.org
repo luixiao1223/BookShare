@@ -1,0 +1,586 @@
+#+TITLE: Goroutine
+
+* goroutine
+
+1. goroutine和线程之间再数量上有很大的区别 fixme （9.8节）
+2. main函数其实就是一个goroutine，我们把它称作主goroutine.
+
+#+BEGIN_SRC go
+  f()
+  go f()
+#+END_SRC
+
+我们先来看看一个具体的例子
+
+#+BEGIN_SRC go
+   func main() {
+    go spinner(100 * time.Millisecond)
+    const n = 45
+    fibN := fib(n) // slow
+    fmt.Printf("\rFibonacci(%d) = %d\n", n, fibN)
+  }
+
+  func spinner(delay time.Duration) {
+    for {
+      for _, r := range `-\|/` {
+        fmt.Printf("\r%c", r)
+        time.Sleep(delay)
+      }
+    }
+  }
+
+  func fib(x int) int {
+    if x < 2 {
+      return x
+    }
+    return fib(x-1) + fib(x-2)
+  }
+#+END_SRC
+
+** 注意
+
+1. main 函数退出的时候，所有goroutine全部暴力退出
+2. 没有程序化的方法让一个goroutine来终止另一个goroutine
+
+* 并发时钟服务器
+
+** clock1
+#+BEGIN_SRC go
+  func main() {
+    listener, err := net.Listen("tcp", "localhost:8000")
+    if err != nil {
+      log.Fatal(err)
+    }
+    for {
+      conn, err := listener.Accept()
+      if err != nil {
+        log.Print(err) // e.g., connection aborted
+        continue
+      }
+      handleConn(conn) // handle one connection at a time
+    }
+  }
+
+  func handleConn(c net.Conn) {
+    defer c.Close()
+    for {
+      _, err := io.WriteString(c, time.Now().Format("15:04:05\n"))
+      if err != nil {
+        return // e.g., client disconnected
+      }
+      time.Sleep(1 * time.Second)
+    }
+  }
+  //!-
+#+END_SRC
+
+当服务器打开后，可以使用
+#+BEGIN_SRC sh
+  nc localhost 8000
+#+END_SRC
+连接，但是只能允许1个客户端连接。
+
+** netcat1
+
+#+BEGIN_SRC go
+  func main() {
+    conn, err := net.Dial("tcp", "localhost:8000")
+    if err != nil {
+      log.Fatal(err)
+    }
+    defer conn.Close()
+    mustCopy(os.Stdout, conn)
+  }
+  func mustCopy(dst io.Writer, src io.Reader) {
+    if _, err := io.Copy(dst, src); err != nil {
+      log.Fatal(err)
+    }
+  }
+#+END_SRC
+
+** clock2
+
+可以接受多个客户端连接
+
+#+BEGIN_SRC go
+  func handleConn(c net.Conn) {
+    defer c.Close()
+    for {
+      _, err := io.WriteString(c, time.Now().Format("15:04:05\n"))
+      if err != nil {
+        return // e.g., client disconnected
+      }
+      time.Sleep(1 * time.Second)
+    }
+  }
+
+  func main() {
+    listener, err := net.Listen("tcp", "localhost:8000")
+    if err != nil {
+      log.Fatal(err)
+    }
+    //!+
+    for {
+      conn, err := listener.Accept()
+      if err != nil {
+        log.Print(err) // e.g., connection aborted
+        continue
+      }
+      go handleConn(conn) // handle connections concurrently
+    }
+  }
+#+END_SRC
+
+* 并发回声服务器
+** reverb1
+#+BEGIN_SRC go
+  func echo(c net.Conn, shout string, delay time.Duration) {
+    fmt.Fprintln(c, "\t", strings.ToUpper(shout))
+    time.Sleep(delay)
+    fmt.Fprintln(c, "\t", shout)
+    time.Sleep(delay)
+    fmt.Fprintln(c, "\t", strings.ToLower(shout))
+  }
+
+  func handleConn(c net.Conn) {
+    input := bufio.NewScanner(c)
+    for input.Scan() {
+      echo(c, input.Text(), 1*time.Second)
+    }
+    // NOTE: ignoring potential errors from input.Err()
+    c.Close()
+  }
+
+  func main() {
+    l, err := net.Listen("tcp", "localhost:8000")
+    if err != nil {
+      log.Fatal(err)
+    }
+    for {
+      conn, err := l.Accept()
+      if err != nil {
+        log.Print(err) // e.g., connection aborted
+        continue
+      }
+      go handleConn(conn)
+    }
+  }
+#+END_SRC
+注意所有的返回是按顺序的，
+
+#+BEGIN_SRC sh
+  some
+      SOME
+  GOOD
+      some
+      some
+      GOOD
+      good
+      good
+#+END_SRC
+
+** reverb2
+
+#+BEGIN_SRC go
+  func echo(c net.Conn, shout string, delay time.Duration) {
+    fmt.Fprintln(c, "\t", strings.ToUpper(shout))
+    time.Sleep(delay)
+    fmt.Fprintln(c, "\t", shout)
+    time.Sleep(delay)
+    fmt.Fprintln(c, "\t", strings.ToLower(shout))
+  }
+
+  func handleConn(c net.Conn) {
+    input := bufio.NewScanner(c)
+    for input.Scan() {
+      go echo(c, input.Text(), 1*time.Second)
+    }
+    // NOTE: ignoring potential errors from input.Err()
+    c.Close()
+  }
+
+  func main() {
+    l, err := net.Listen("tcp", "localhost:8000")
+    if err != nil {
+      log.Fatal(err)
+    }
+    for {
+      conn, err := l.Accept()
+      if err != nil {
+        log.Print(err) // e.g., connection aborted
+        continue
+      }
+      go handleConn(conn)
+    }
+  }
+#+END_SRC
+
+返回是乱序的，因为并发返回
+
+#+BEGIN_SRC sh
+  some
+     SOME
+  good
+     GOOD
+     some
+     good
+     some
+     good
+#+END_SRC
+
+* 通道
+
+1. 用来在 goroutine 之间进行通信用的。
+2. 通道是引用类型。
+3. 通道类型之间可以比较 $==$, 通道的0值为nil
+
+#+BEGIN_SRC go
+  ch := make(chan int)
+  ch <- x
+  x = <- ch
+  <-ch
+  close(ch)
+#+END_SRC
+
+1. 往一个关闭的通道发送数据，将引发宕机。
+2. 从一个关闭的通道获取数据，会不断的获取数据。直到获取完毕所有数据。然后，之后的操作立即返回nil。
+3. 重复关闭一个通道也会引发宕机。
+
+#+BEGIN_SRC go
+  ch = make(chan int)     // 无缓冲通道
+  ch = make(chan int, 0)  // 无缓冲通道
+  ch = make(chan init, 3) // 容量为3的通道
+#+END_SRC
+
+** 无缓冲通道
+
+1. 无缓冲通道也叫做同步通道。
+
+#+BEGIN_SRC go
+  func main() {
+    conn, err := net.Dial("tcp", "localhost:8000")
+    if err != nil {
+      log.Fatal(err)
+    }
+    done := make(chan struct{})
+    go func() {
+      io.Copy(os.Stdout, conn) // NOTE: ignoring errors
+      log.Println("done")
+      done <- struct{}{} // signal the main goroutine
+    }()
+    mustCopy(conn, os.Stdin)//注意主程序只执行到这一步，就卡住了。
+    conn.Close()
+    <-done // wait for background goroutine to finish
+  }
+
+  func mustCopy(dst io.Writer, src io.Reader) {
+    if _, err := io.Copy(dst, src); err != nil {
+      log.Fatal(err)
+    }
+  }
+#+END_SRC
+
+等待计算结果
+
+#+BEGIN_SRC go
+  package main
+  import (
+    "fmt"
+    "time"
+  )
+  func main() {
+    result := 0
+    done := make(chan struct{})
+    go func() {
+      for i := 1; i < 10; i++ {
+        result = i + result
+        time.Sleep(1000 * time.Millisecond)
+        fmt.Println(".....")
+      }
+      done <- struct{}{}
+    }()
+    <-done
+    fmt.Println(result)
+  }
+#+END_SRC
+
+** 管道
+*** pipeline1
+#+BEGIN_SRC go
+  func main() {
+    naturals := make(chan int)
+    squares := make(chan int)
+
+    // Counter
+    go func() {
+      for x := 0; ; x++ {
+        naturals <- x
+      }
+    }()
+
+    // Squarer
+    go func() {
+      for {
+        x := <-naturals
+        squares <- x * x
+      }
+    }()
+
+    // Printer (in main goroutine)
+    for {
+      fmt.Println(<-squares)
+    }
+  }
+#+END_SRC
+
+*** pipeline2
+#+BEGIN_SRC go
+  func main() {
+    naturals := make(chan int)
+    squares := make(chan int)
+
+    // Counter
+    go func() {
+      for x := 0; x < 100; x++ {
+        naturals <- x
+      }
+      close(naturals)
+    }()
+
+    // Squarer
+    go func() {
+      for x := range naturals {
+        squares <- x * x
+      }
+      close(squares)
+    }()
+
+    // Printer (in main goroutine)
+    for x := range squares {
+      fmt.Println(x)
+    }
+  }
+#+END_SRC
+
+1. 关闭每一个通道不是必须的。
+2. 通道的关闭是通过是否可以访问来确定是否资源回收。而不是是否关闭
+
+** 单项通道类型
+
+#+BEGIN_SRC go
+  func counter(out chan<- int) {
+    for x := 0; x < 100; x++ {
+      out <- x
+    }
+    close(out)
+  }
+
+  func squarer(out chan<- int, in <-chan int) {
+    for v := range in {
+      out <- v * v
+    }
+    close(out)
+  }
+
+  func printer(in <-chan int) {
+    for v := range in {
+      fmt.Println(v)
+    }
+  }
+
+  func main() {
+    naturals := make(chan int)
+    squares := make(chan int)
+
+    go counter(naturals)
+    go squarer(squares, naturals)
+    printer(squares)
+  }
+#+END_SRC
+
+** 缓冲通道
+
+#+BEGIN_SRC go
+  ch := make(chan string, 3)
+  fmt.Println(cap(ch)) // 3
+  fmt.Println(len(ch)) // 2 当前有多少个元素在里面
+#+END_SRC
+
+1. 注意不能把管道当做队列来用。因为使用队列来用少有不甚，会导致程序卡住。
+
+#+BEGIN_SRC go
+  func mirroredQuery() string {
+    responses := make(chan string, 3)
+    go func() {responses <- request("asia.gopl.io")} ()
+    go func() {responses <- request("europe.gopl.io")} ()
+    go func() {responses <- request("americas.gopl.io")} ()
+    return <-responses
+  }
+
+  func request(hostname string) (response string) {/* ... */}
+#+END_SRC
+
+1. 如果采用无缓冲的chan，那么慢的两个goroutine就会卡卡住。不会被释放掉，因为没有东西来接收这两goroutine的返回。
+
+*** cake exmaple
+
+**** cake
+
+#+BEGIN_SRC go
+  package cake
+
+  import (
+    "fmt"
+    "math/rand"
+    "time"
+  )
+
+  type Shop struct {
+    Verbose        bool
+    Cakes          int           // number of cakes to bake
+    BakeTime       time.Duration // time to bake one cake
+    BakeStdDev     time.Duration // standard deviation of baking time
+    BakeBuf        int           // buffer slots between baking and icing
+    NumIcers       int           // number of cooks doing icing
+    IceTime        time.Duration // time to ice one cake
+    IceStdDev      time.Duration // standard deviation of icing time
+    IceBuf         int           // buffer slots between icing and inscribing
+    InscribeTime   time.Duration // time to inscribe one cake
+    InscribeStdDev time.Duration // standard deviation of inscribing time
+  }
+
+  type cake int
+
+  func (s *Shop) baker(baked chan<- cake) {
+    for i := 0; i < s.Cakes; i++ {
+      c := cake(i)
+      if s.Verbose {
+        fmt.Println("baking", c)
+      }
+      work(s.BakeTime, s.BakeStdDev)
+      baked <- c
+    }
+    close(baked)
+  }
+
+  func (s *Shop) icer(iced chan<- cake, baked <-chan cake) {
+    for c := range baked {
+      if s.Verbose {
+        fmt.Println("icing", c)
+      }
+      work(s.IceTime, s.IceStdDev)
+      iced <- c
+    }
+  }
+
+  func (s *Shop) inscriber(iced <-chan cake) {
+    for i := 0; i < s.Cakes; i++ {
+      c := <-iced
+      if s.Verbose {
+        fmt.Println("inscribing", c)
+      }
+      work(s.InscribeTime, s.InscribeStdDev)
+      if s.Verbose {
+        fmt.Println("finished", c)
+      }
+    }
+  }
+
+  // Work runs the simulation 'runs' times.
+  func (s *Shop) Work(runs int) {
+    for run := 0; run < runs; run++ {
+      baked := make(chan cake, s.BakeBuf)
+      iced := make(chan cake, s.IceBuf)
+      go s.baker(baked)
+      for i := 0; i < s.NumIcers; i++ {
+        go s.icer(iced, baked)
+      }
+      s.inscriber(iced)
+    }
+  }
+
+  // work blocks the calling goroutine for a period of time
+  // that is normally distributed around d
+  // with a standard deviation of stddev.
+  func work(d, stddev time.Duration) {
+    delay := d + time.Duration(rand.NormFloat64()*float64(stddev))
+    time.Sleep(delay)
+  }
+#+END_SRC
+
+**** cake_test
+#+BEGIN_SRC go
+  package cake_test
+
+  import (
+    "testing"
+    "time"
+
+    "gopl.io/ch8/cake"
+  )
+
+  var defaults = cake.Shop{
+    Verbose:      testing.Verbose(),
+    Cakes:        20,
+    BakeTime:     10 * time.Millisecond,
+    NumIcers:     1,
+    IceTime:      10 * time.Millisecond,
+    InscribeTime: 10 * time.Millisecond,
+  }
+
+  func Benchmark(b *testing.B) {
+    // Baseline: one baker, one icer, one inscriber.
+    // Each step takes exactly 10ms.  No buffers.
+    cakeshop := defaults
+    cakeshop.Work(b.N) // 224 ms
+  }
+
+  func BenchmarkBuffers(b *testing.B) {
+    // Adding buffers has no effect.
+    cakeshop := defaults
+    cakeshop.BakeBuf = 10
+    cakeshop.IceBuf = 10
+    cakeshop.Work(b.N) // 224 ms
+  }
+
+  func BenchmarkVariable(b *testing.B) {
+    // Adding variability to rate of each step
+    // increases total time due to channel delays.
+    cakeshop := defaults
+    cakeshop.BakeStdDev = cakeshop.BakeTime / 4
+    cakeshop.IceStdDev = cakeshop.IceTime / 4
+    cakeshop.InscribeStdDev = cakeshop.InscribeTime / 4
+    cakeshop.Work(b.N) // 259 ms
+  }
+
+  func BenchmarkVariableBuffers(b *testing.B) {
+    // Adding channel buffers reduces
+    // delays resulting from variability.
+    cakeshop := defaults
+    cakeshop.BakeStdDev = cakeshop.BakeTime / 4
+    cakeshop.IceStdDev = cakeshop.IceTime / 4
+    cakeshop.InscribeStdDev = cakeshop.InscribeTime / 4
+    cakeshop.BakeBuf = 10
+    cakeshop.IceBuf = 10
+    cakeshop.Work(b.N) // 244 ms
+  }
+
+  func BenchmarkSlowIcing(b *testing.B) {
+    // Making the middle stage slower
+    // adds directly to the critical path.
+    cakeshop := defaults
+    cakeshop.IceTime = 50 * time.Millisecond
+    cakeshop.Work(b.N) // 1.032 s
+  }
+
+  func BenchmarkSlowIcingManyIcers(b *testing.B) {
+    // Adding more icing cooks reduces the cost of icing
+    // to its sequential component, following Amdahl's Law.
+    cakeshop := defaults
+    cakeshop.IceTime = 50 * time.Millisecond
+    cakeshop.NumIcers = 5
+    cakeshop.Work(b.N) // 288ms
+  }
+#+END_SRC
+
+** 并行循环
