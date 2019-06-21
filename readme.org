@@ -1,5 +1,5 @@
 #+TITLE: 读书分享
 
-* [[https://github.com/luixiao1223/BookShare/the_go_programming_languag][GO语言程序设计(the go programming language)]]
+* [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language][GO语言程序设计(the go programming language)]]
 
 
