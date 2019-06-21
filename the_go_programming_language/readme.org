@@ -26,29 +26,29 @@ https://golang.org/ref/spec
 
 * 章节分配
 
-| Chapter                              | speaker     |       time |
-|--------------------------------------+-------------+------------|
-| 1. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch01-02][Tutorial]]                          | TonyHuiHUI  | 2019-06-16 |
-| 2. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch01-02][Program Structure]]                 | TonyHuiHUI  |      20:00 |
-|--------------------------------------+-------------+------------|
-| 3. Basic Data Types                  | Sevenpin    | 2019-06-23 |
-| 4. Composite Types                   | Sevenpin    |      20:00 |
-|--------------------------------------+-------------+------------|
-| 5. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch05][Functions]]                         | luixiao1223 |            |
-|--------------------------------------+-------------+------------|
-| 6. Methods                           | rythmE      |            |
-|--------------------------------------+-------------+------------|
-| 7. Interfaces                        | TonyHuiHUI  |            |
-|--------------------------------------+-------------+------------|
-| 8. Goroutines                        | luixiao1223 |            |
-|--------------------------------------+-------------+------------|
-| 9. Concurrency with Shared Variables | rythmE      |            |
-|--------------------------------------+-------------+------------|
-| 10. Packages and the Go Tool         | Sevenpin    |            |
-|--------------------------------------+-------------+------------|
-| 11. Testing                          | TonyHuiHUI  |            |
-|--------------------------------------+-------------+------------|
-| 12. Reflection                       | rythmE      |            |
-|--------------------------------------+-------------+------------|
-| 13. Low-Level Programming            | luixiao1223 |            |
+| Chapter                              | speaker     | time             |
+|--------------------------------------+-------------+------------------|
+| 1. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch01-02][Tutorial]]                          | TonyHuiHUI  | 2019-06-16 20:00 |
+| 2. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch01-02][Program Structure]]                 | TonyHuiHUI  | 2019-06-16 20:00 |
+|--------------------------------------+-------------+------------------|
+| 3. Basic Data Types                  | Sevenpin    | 2019-06-23 20:00 |
+| 4. Composite Types                   | Sevenpin    | 2019-06-23 20:00 |
+|--------------------------------------+-------------+------------------|
+| 5. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch05][Functions]]                         | luixiao1223 |                  |
+|--------------------------------------+-------------+------------------|
+| 6. Methods                           | rythmE      |                  |
+|--------------------------------------+-------------+------------------|
+| 7. Interfaces                        | TonyHuiHUI  |                  |
+|--------------------------------------+-------------+------------------|
+| 8. Goroutines                        | luixiao1223 |                  |
+|--------------------------------------+-------------+------------------|
+| 9. Concurrency with Shared Variables | rythmE      |                  |
+|--------------------------------------+-------------+------------------|
+| 10. Packages and the Go Tool         | Sevenpin    |                  |
+|--------------------------------------+-------------+------------------|
+| 11. Testing                          | TonyHuiHUI  |                  |
+|--------------------------------------+-------------+------------------|
+| 12. Reflection                       | rythmE      |                  |
+|--------------------------------------+-------------+------------------|
+| 13. Low-Level Programming            | luixiao1223 |                  |
 
