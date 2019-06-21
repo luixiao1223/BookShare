@@ -28,13 +28,13 @@ https://golang.org/ref/spec
 
 | Chapter                              | speaker     |       time |
 |--------------------------------------+-------------+------------|
-| 1. Tutorial                          | TonyHuiHUI  | 2019-06-16 |
-| 2. Program Structure                 | TonyHuiHUI  |      20:00 |
+| 1. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch01-02][Tutorial]]                          | TonyHuiHUI  | 2019-06-16 |
+| 2. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch01-02][Program Structure]]                 | TonyHuiHUI  |      20:00 |
 |--------------------------------------+-------------+------------|
 | 3. Basic Data Types                  | Sevenpin    | 2019-06-23 |
 | 4. Composite Types                   | Sevenpin    |      20:00 |
 |--------------------------------------+-------------+------------|
-| 5. Functions                         | luixiao1223 |            |
+| 5. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch05][Functions]]                         | luixiao1223 |            |
 |--------------------------------------+-------------+------------|
 | 6. Methods                           | rythmE      |            |
 |--------------------------------------+-------------+------------|
