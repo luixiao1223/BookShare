@@ -423,4 +423,127 @@
 1. 如果采用无缓冲的chan，那么慢的两个goroutine就会卡卡住。不会被释放掉，因为没有东西来接收这两goroutine的返回。
 2. 具体是怎么泄露的？ fixme
 
-** 并行循环
+* 并行循环
+
+无并行程序写法
+#+BEGIN_SRC go
+  func makeThumbnails(filenames []string) {
+    for _, f := range filenames {
+      if _, err := thumbnail.ImageFile(f); err != nil {
+        log.Println(err)
+      }
+    }
+  }
+#+END_SRC
+
+并行写法
+#+BEGIN_SRC go
+  func makeThumbnails(filenames []string) {
+    for _, f := range filenames {
+      go thumbnail.ImageFile(f) // 这个地方存在问题，程序又错误！！！
+    }
+  }
+#+END_SRC
+
+上面的程序有两个地方存在问题。
+
+1. f的问题
+2. 程序运行之后瞬间推出。并没有任何函数再等待goroutine运行完毕。
+
+#+BEGIN_SRC go
+  func makeThumbnails(filenames []string){
+    ch := make(chan struct{})
+    for _, f : range filenames {
+      go func(f string) {
+        thumbnail.ImageFile(f)
+        ch <-struct{}{}
+      }(f)
+    }
+
+    for range filenames {
+      <-ch
+    }
+  }
+#+END_SRC
+
+处理返回值
+
+#+BEGIN_SRC go
+  func makeThumbnails(filenames []string) error{
+    errors := make(chan error)
+    for _, f := range filenames {
+      _, err := thumbnail.ImageFile(f)
+      errors <- err
+    }(f)
+
+    for range filenames {
+      if err := <-errors; err != nil {
+        return err // 这里不正确，goroutine泄露危险
+      }
+    }
+
+    return nil
+  }
+#+END_SRC
+
+Q:为什么会造成goroutine协奏，goroutine泄露的原理是什么？
+
+解决方案，是开辟一个和filenames一样长的通道。
+#+BEGIN_SRC go
+  func makeThumbnails5(filenames []string) (thumbfiles []string, err error) {
+    type item struct {
+      thumbfile string
+      err       error
+    }
+    ch := make(chan item, len(filenames))
+    for _, f := range filenames {
+      go func(f string) {
+        var it item
+        it.thumbfile, it.err = thumbnail.ImageFile(f)
+        ch <- it
+        }(f)
+    }
+    for range filenames {
+      it := <-ch
+      if it.err != nil {
+        return nil, it.err
+      }
+      thumbfiles = append(thumbfiles, it.thumbfile)
+    }
+    return thumbfiles, nil
+  }
+#+END_SRC
+
+一个更好的解决方案
+
+#+BEGIN_SRC go
+  func makeThumbnails6(filenames <-chan string) int64 {
+    sizes := make(chan int64)
+    var wg sync.WaitGroup // number of working goroutines
+    for f := range filenames {
+      wg.Add(1)
+      // worker
+      go func(f string) {
+        defer wg.Done()
+        thumb, err := thumbnail.ImageFile(f)
+        if err != nil {
+          log.Println(err)
+          return }
+        info, _ := os.Stat(thumb) // OK to ignore error
+        sizes <- info.Size()
+      }(f)
+    }
+    // closer
+    go func() {
+      wg.Wait()
+      close(sizes)
+    }()
+    var total int64
+    for size := range sizes {
+      total += size
+    }
+    return total
+  }
+#+END_SRC
+
+* 并发的Web爬虫
