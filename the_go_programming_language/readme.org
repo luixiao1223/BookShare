@@ -51,7 +51,3 @@ https://golang.org/ref/spec
 | 12. Reflection                       | rythmE      |                  |
 |--------------------------------------+-------------+------------------|
 | 13. Low-Level Programming            | TonyHuiHUI  |                  |
-
-\begin{displaymath}
-  x^{2} = y^{2}
-\end{displaymath}
