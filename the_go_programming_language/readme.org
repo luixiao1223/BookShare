@@ -52,3 +52,6 @@ https://golang.org/ref/spec
 |--------------------------------------+-------------+------------------|
 | 13. Low-Level Programming            | TonyHuiHUI  |                  |
 
+\begin{displaymath}
+  x^{2} = y^{2}
+\end{displaymath}
