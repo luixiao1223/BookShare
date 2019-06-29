@@ -51,9 +51,3 @@ https://golang.org/ref/spec
 | 12. Reflection                       | rythmE      |                  |
 |--------------------------------------+-------------+------------------|
 | 13. Low-Level Programming            | TonyHuiHUI  |                  |
-
-
-
-\[\int_{-10}^{10}{sin(x)dx}\]
-
-
