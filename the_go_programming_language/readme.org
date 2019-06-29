@@ -54,7 +54,6 @@ https://golang.org/ref/spec
 
 
 
-$$
-\int_{-10}^{10}{sin(x)dx}
-$$
+\[\int_{-10}^{10}{sin(x)dx}\]
+
 
