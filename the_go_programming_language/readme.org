@@ -24,7 +24,7 @@ https://gobyexample.com/
 
 https://golang.org/ref/spec
 
-* COMMENT 章节分配
+* 章节分配
 
 | Chapter                              | speaker     | time             |
 |--------------------------------------+-------------+------------------|
@@ -53,6 +53,8 @@ https://golang.org/ref/spec
 | 13. Low-Level Programming            | TonyHuiHUI  |                  |
 
 
+
 $$
 \int_{-10}^{10}{sin(x)dx}
 $$
+
