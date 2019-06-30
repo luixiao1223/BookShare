@@ -26,11 +26,19 @@
 ** 需要注意点
 
 1. go 语言没有默认参数的概念，也不能指定参数名
+
+   #+BEGIN_SRC python
+   def some(name=10, kkk=20):
+       print(name)
+
+   some(name=11)
+   #+END_SRC
+
 2. 函数类型（具有相同形参列表和返回列表的函数是同种类型）
 3. 没有函数体的函数声明，可能是来自于go语言之外的语言实现的。
    #+BEGIN_SRC go
      package math
-     func sin(x float64) float64 // 使用汇编语言实现
+     func sin(x float64) float64 // 使用汇编语言实现 fixme
    #+END_SRC
 
 * 递归
@@ -186,6 +194,9 @@
     fmt.Println(f()) // "4"
     fmt.Println(f()) // "9"
     fmt.Println(f()) // "16"
+    fb := squares()
+    fmt.Println(fb()) // "1"
+    fmt.Println(f())  // "25"
   }
 #+END_SRC
 
@@ -201,7 +212,6 @@
       os.RemoveAll(dir) // NOTE: incorrect!
     })
   }
-
 #+END_SRC
 
 *** right
@@ -288,7 +298,7 @@
     if err != nil {
       return err
     }
-    defer resp.Body.Close()
+    defer resp.Body.Close() // 发生在return之后
     ct := resp.Header.Get("Content-Type")
     if ct != "text/html" && !strings.HasPrefix(ct, "text/html;") {
       return fmt.Errorf("%s has type %s, not text/html", url, ct)
@@ -304,7 +314,7 @@
 
 ** 注意
 
-1. defer 没有限制使用次数，执行的时候以调研defer的顺序倒序执行。
+1. defer 没有限制使用次数，执行的时候以调用defer的顺序倒序执行。
 2. defer 语句的求值是在执行defer语句的时候执行。
 3. defer 的执行在return语句之后。
 
@@ -341,7 +351,6 @@
     defer f.Close() // NOTE: risky; could run out of file descriptors
     // ...process f...
   }
-
 #+END_SRC
 
 *** 更好的方法
@@ -425,7 +434,7 @@ recover可以劫持宕机，然后处理之后恢复运行
         err = fmt.Errorf("internal error: %v", p) // 这里就会恢复，程序不会退出
       }
     }()
-    // ...parser... 加入在这里发生宕机
+    // ...parser... 假如在这里发生宕机
   }
 #+END_SRC
 
