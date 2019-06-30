@@ -38,7 +38,7 @@
 3. 没有函数体的函数声明，可能是来自于go语言之外的语言实现的。
    #+BEGIN_SRC go
      package math
-     func sin(x float64) float64 // 使用汇编语言实现 fixme
+     func sin(x float64) float64 // 使用汇编语言实现 （等到12章，才会明白）
    #+END_SRC
 
 * 递归
