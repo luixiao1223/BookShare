@@ -548,7 +548,7 @@ Q:为什么会造成goroutine协奏，goroutine泄露的原理是什么？
 
 * 并发的Web爬虫
 
-** COMMENT 第一版
+** 第一版
 
 #+BEGIN_SRC go
   func crawl(url string) []string {
@@ -568,10 +568,10 @@ Q:为什么会造成goroutine协奏，goroutine泄露的原理是什么？
     go func() { worklist <- os.Args[1:] }()
     // Crawl the web concurrently.
     seen := make(map[string]bool)
-    for list := range worklist {
+    for list := range worklist { // 注意，不会结束的原因在这里。因为阻塞住了。当worklist中的内容为空时。阻塞住。
       for _, link := range list {
         if !seen[link] {
-          seen[like] = true
+          seen[link] = true
           go func(link string){
             worklist <- crawl(link)
           }(link)
@@ -586,3 +586,78 @@ Q:为什么会造成goroutine协奏，goroutine泄露的原理是什么？
 1. 打开太多的链接。并发度太高，导致文件描述符不够用
 2. 程序并没有终止。
 
+** 解决链接太多问题
+
+#+BEGIN_SRC go
+  var tokens = make(chan struct{}, 20)
+  func crawl(url string) []string {
+    fmt.Println(url)
+    tokens <- struct{}{} // acquire a token
+    list, err := links.Extract(url) // 最多只有20个go线程在获取url对应的所有链接。
+    <-tokens // release the token
+    if err != nil {
+      log.Print(err)
+    }
+    return list
+  }
+#+END_SRC
+
+** 解决终止问题
+
+#+BEGIN_SRC go
+  func main() {
+    worklist := make(chan []string)
+    var n int // number of pending sends to worklist
+    // Start with the command-line arguments.
+    n++
+    go func() { worklist <- os.Args[1:] }()
+    // Crawl the web concurrently.
+    seen := make(map[string]bool)
+    for ; n > 0; n-- {
+      list := <-worklist
+      for _, link := range list {
+        if !seen[link] {
+          seen[link] = true
+          n++
+          go func(link string) {
+            worklist <- crawl(link)
+          }(link)
+        }
+      }
+    }
+  }
+#+END_SRC
+
+** 一个替代方案
+*可同时解决连接数过多，和终止问题。*
+
+#+BEGIN_SRC go
+  func main() {
+    worklist := make(chan []string)  // lists of URLs, may have duplicates
+    unseenLinks := make(chan string) // de-duplicated URLs
+    // Add command-line arguments to worklist.
+    go func() { worklist <- os.Args[1:] }()
+    // Create 20 crawler goroutines to fetch each unseen link.
+    for i := 0; i < 20; i++ {
+      go func() {
+        for link := range unseenLinks {
+          foundLinks := crawl(link)
+          go func() { worklist <- foundLinks }()
+        }
+      }() }
+    // The main goroutine de-duplicates worklist items
+    // and sends the unseen ones to the crawlers.
+    seen := make(map[string]bool)
+    for list := range worklist {
+      for _, link := range list {
+        if !seen[link] {
+          seen[link] = true
+          unseenLinks <- link
+        }
+      }
+    }
+  }
+#+END_SRC
+
+
+* 多路select
