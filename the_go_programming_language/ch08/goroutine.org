@@ -629,7 +629,7 @@ Q:为什么会造成goroutine协奏，goroutine泄露的原理是什么？
 #+END_SRC
 
 ** 一个替代方案
-*可同时解决连接数过多，和终止问题。*
+*解决连接数过多, 没有解决终止问题？*
 
 #+BEGIN_SRC go
   func main() {
