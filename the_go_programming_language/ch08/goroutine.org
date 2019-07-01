@@ -547,3 +547,42 @@ Q:为什么会造成goroutine协奏，goroutine泄露的原理是什么？
 #+END_SRC
 
 * 并发的Web爬虫
+
+** COMMENT 第一版
+
+#+BEGIN_SRC go
+  func crawl(url string) []string {
+    fmt.Println(url)
+    list, err := links.Extract(url)
+    if err != nil {
+      log.Print(err)
+    }
+    return list
+  }
+#+END_SRC
+
+#+BEGIN_SRC go
+  func main() {
+    worklist := make(chan []string)
+    // Start with the command-line arguments.
+    go func() { worklist <- os.Args[1:] }()
+    // Crawl the web concurrently.
+    seen := make(map[string]bool)
+    for list := range worklist {
+      for _, link := range list {
+        if !seen[link] {
+          seen[like] = true
+          go func(link string){
+            worklist <- crawl(link)
+          }(link)
+        }
+      }
+    }
+  }
+#+END_SRC
+
+问题：
+
+1. 打开太多的链接。并发度太高，导致文件描述符不够用
+2. 程序并没有终止。
+
