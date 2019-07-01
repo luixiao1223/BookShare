@@ -644,7 +644,8 @@ Q:为什么会造成goroutine协奏，goroutine泄露的原理是什么？
           foundLinks := crawl(link)
           go func() { worklist <- foundLinks }()
         }
-      }() }
+      }() 
+    }
     // The main goroutine de-duplicates worklist items
     // and sends the unseen ones to the crawlers.
     seen := make(map[string]bool)
