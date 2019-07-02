@@ -40,7 +40,7 @@ https://golang.org/ref/spec
 |--------------------------------------+-------------+------------------|
 | 7. Interfaces                        | TonyHuiHUI  |                  |
 |--------------------------------------+-------------+------------------|
-| 8. Goroutines                        | luixiao1223 |                  |
+| 8. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch08][Goroutines]]                        | luixiao1223 |                  |
 |--------------------------------------+-------------+------------------|
 | 9. Concurrency with Shared Variables | rythmE      |                  |
 |--------------------------------------+-------------+------------------|
