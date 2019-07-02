@@ -200,6 +200,8 @@
   }
 #+END_SRC
 
+PS : (TonyHuiHUI)给出可以理解为，squares的调用后置，并没有清除squares的堆栈信息。所以x是可以被函数f访问到的。当第二次调用squares的时候再次创建了一个新的堆栈fb就可以访问到新的x了
+
 ** 容易出错的地方
 *** wrong
 
