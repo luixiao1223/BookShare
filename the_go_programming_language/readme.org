@@ -26,16 +26,16 @@ https://golang.org/ref/spec
 
 * speakers
 
-1. [[https://github.com/rythmE][rythmE]]
-2. [[https://github.com/TonyHuiHUI][TonyHuiHUI]]
-3. [[https://github.com/Sevenpin][Sevenpin]]
-4. [[https://github.com/luixiao1223][luixiao1223]]
+1. <<A>>[[https://github.com/rythmE][rythmE]]
+2. [[https://github.com/TonyHuiHUI][<<B>>TonyHuiHUI]]
+3. [[https://github.com/Sevenpin][<<C>>Sevenpin]]
+4. [[https://github.com/luixiao1223][<<D>>luixiao1223]]
 
 * 章节分配
 
 | Chapter                              | speaker     | time             |
 |--------------------------------------+-------------+------------------|
-| 1. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch01-02][Tutorial]]                          | TonyHuiHUI  | 2019-06-16 20:00 |
+| 1. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch01-02][Tutorial]]                          | [[B]]           | 2019-06-16 20:00 |
 | 2. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch01-02][Program Structure]]                 | TonyHuiHUI  | 2019-06-16 20:00 |
 |--------------------------------------+-------------+------------------|
 | 3. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch03-ch04][Basic Data Types]]                  | Sevenpin    | 2019-06-23 20:00 |
