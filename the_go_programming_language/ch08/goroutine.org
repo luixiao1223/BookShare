@@ -661,6 +661,381 @@ Q:为什么会造成goroutine协奏，goroutine泄露的原理是什么？
 #+END_SRC
 
 * 多路select
+** 倒计时程序
+倒计时发射程序
+
+#+BEGIN_SRC go
+  func main() {
+    fmt.Println("Commencing countdown.")
+    tick := time.Tick(1 * time.Second)
+    for countdown := 10; countdown > 0; countdown-- {
+      fmt.Println(countdown)
+      <-tick
+    }
+    launch()
+  }
+#+END_SRC
+
+取消发射程序
+#+BEGIN_SRC go
+  abort := make(chan struct{})
+  go func() {
+    os.Stdin.Read(make([]byte, 1)) // read a single byte
+    abort <- struct{}{}
+  }()
+#+END_SRC
+
+如何同时接收并处理tick和abort消息？select
+
+#+BEGIN_SRC go
+  select {
+       case <-ch1:
+           // ...
+       case x := <-ch2:
+           // ...use x...
+       case ch3 <- y:
+           // ...
+       default:
+    // ...
+  }
+#+END_SRC
+
+最终实现
+#+BEGIN_SRC go
+  func main() {
+    // ...create abort channel...
+    fmt.Println("Commencing countdown.  Press return to abort.")
+    select {
+    case <-time.After(10 * time.Second):
+      // Do nothing.
+    case <-abort:
+      fmt.Println("Launch aborted!")
+      return 
+      }
+    launch()
+  }
+#+END_SRC
+
+** 注意事项
+*** 多个 chan 同时有数据的时候怎么办？
+
+随即选择一个执行
+
+*** goroutine泄露
+
+#+BEGIN_SRC go
+  func main() {
+    // ...create abort channel...
+    fmt.Println("Commencing countdown.  Press return to abort.")
+    tick := time.Tick(1 * time.Second)// 行为类似创建一个goroutine不断的向tick发送事件
+    for countdown := 10; countdown > 0; countdown-- {
+      fmt.Println(countdown)
+      select {
+      case <-tick:
+        // Do nothing.
+      case <-abort:
+        fmt.Println("Launch aborted!")
+        return // 返回之后，tick没有对象去取事件，但是却有一个goroutine再不断的发事件给tick.所以goroutine泄露
+      }
+    }
+    launch()
+  }
+#+END_SRC
+
+记得关闭它
+#+BEGIN_SRC go
+  ticker := time.NewTicker(1 * time.Second)
+  <-ticker.C // receive from the ticker's channel
+  ticker.Stop() // cause the ticker's goroutine to terminate
+#+END_SRC
+
+*** 非阻塞信道
+
+#+BEGIN_SRC go
+  select {
+  case <-abort:
+    fmt.Printf("Launch aborted!\n")
+    return
+  default:
+    // do nothing
+  }
+#+END_SRC
+
+*** nil chan
+
+网nil chan发送或者接受数据都是永久阻塞。
+
+#+BEGIN_SRC go
+  nil <- "some" // 发送
+  <- nil        // 接受
+#+END_SRC
+
 * 并发目录遍历
+** 第一版
+#+BEGIN_SRC go
+  // walkDir recursively walks the file tree rooted at dir
+  // and sends the size of each found file on fileSizes.
+  func walkDir(dir string, fileSizes chan<- int64) {
+    for _, entry := range dirents(dir) {
+      if entry.IsDir() {
+        subdir := filepath.Join(dir, entry.Name())
+        walkDir(subdir, fileSizes)
+      }else {
+        fileSizes <- entry.Size()
+      }
+    }
+  }
+  // dirents returns the entries of directory dir.
+  func dirents(dir string) []os.FileInfo {
+    entries, err := ioutil.ReadDir(dir)
+    if err != nil {
+      fmt.Fprintf(os.Stderr, "du1: %v\n", err)
+      return nil
+    }
+    return entries
+  }
+#+END_SRC
+
+#+BEGIN_SRC go
+  func main() {
+    // Determine the initial directories.
+    flag.Parse()
+    roots := flag.Args()
+    if len(roots) == 0 {
+      roots = []string{"."}
+    }
+    // Traverse the file tree.
+    fileSizes := make(chan int64)
+    go func() {
+      for _, root := range roots {
+        walkDir(root, fileSizes)
+      }
+      close(fileSizes)
+    }()
+    // Print the results.
+    var nfiles, nbytes int64
+    for size := range fileSizes {
+      nfiles++
+      nbytes += size
+    }
+    printDiskUsage(nfiles, nbytes)
+  }
+
+  func printDiskUsage(nfiles, nbytes int64) {
+    fmt.Printf("%d files  %.1f GB\n", nfiles, float64(nbytes)/1e9)
+  }
+#+END_SRC
+
+** 改进版
+*** 每隔一段时间输出信息
+参数v控制是否输出filesize，每隔一段时间输出
+#+BEGIN_SRC go
+  var verbose = flag.Bool("v", false, "show verbose progress messages")
+  func main() {
+    // ...start background goroutine...
+    // Print the results periodically.
+    var tick <-chan time.Time
+    if *verbose {
+      tick = time.Tick(500 * time.Millisecond)
+    }
+    var nfiles, nbytes int64
+  loop:
+    for {
+      select {
+      case size, ok := <-fileSizes:
+        if !ok {
+          break loop // fileSizes was closed
+        }
+        nfiles++
+        nbytes += size
+      case <-tick: // 有么有goroutine泄露？
+        printDiskUsage(nfiles, nbytes)
+      }
+    }
+    printDiskUsage(nfiles, nbytes) // final totals
+  }
+#+END_SRC
+
+*** 充分利用好并发
+
+#+BEGIN_SRC go
+  func main() {
+    // ...determine roots...
+    // Traverse each root of the file tree in parallel.
+    fileSizes := make(chan int64)
+    var n sync.WaitGroup
+    for _, root := range roots {
+      n.Add(1)
+      go walkDir(root, &n, fileSizes)
+    }
+    go func() {
+      n.Wait()
+      close(fileSizes)
+    }()
+    // ...select loop... 上一个例子的信息输出循环
+  }
+
+  func walkDir(dir string, n *sync.WaitGroup, fileSizes chan<- int64) {
+    defer n.Done()
+    for _, entry := range dirents(dir) {
+      if entry.IsDir() {
+        n.Add(1)
+        subdir := filepath.Join(dir, entry.Name())
+        go walkDir(subdir, n, fileSizes)
+      } else {
+        fileSizes <- entry.Size()
+      }
+    }
+  }
+#+END_SRC
+
+*** 限制上一个例子的并发量
+
+#+BEGIN_SRC go
+  // sema is a counting semaphore for limiting concurrency in dirents.
+  var sema = make(chan struct{}, 20)
+  // dirents returns the entries of directory dir.
+  func dirents(dir string) []os.FileInfo {
+    sema <- struct{}{}        // acquire token
+    defer func() { <-sema }() // release token
+    // ...
+  }
+#+END_SRC
+
 * 取消
+
+#+BEGIN_SRC go
+  var done = make(chan struct{})
+  func cancelled() bool {
+    select {
+    case <-done:
+      return true
+    default:
+      return false
+    }
+  }
+#+END_SRC
+
+#+BEGIN_SRC go
+  // Cancel traversal when input is detected.
+  go func() {
+    os.Stdin.Read(make([]byte, 1)) // read a single byte
+    close(done)
+  }()
+#+END_SRC
+
+#+BEGIN_SRC go
+  for {
+    select {
+    case <-done: // 为什么多个地方有这个语句？ 因为在一个关闭的通道上取东西，直接返回
+      // Drain fileSizes to allow existing goroutines to finish.
+      for range fileSizes {
+        // Do nothing.
+      }
+      return
+    case size, ok := <-fileSizes:
+      // ...
+    }
+  }
+#+END_SRC
+
+goroutine各自分别退出自己。
+#+BEGIN_SRC go
+  func walkDir(dir string, n *sync.WaitGroup, fileSizes chan<- int64) {
+    defer n.Done()
+    if cancelled() {
+      return
+    }
+    for _, entry := range dirents(dir) {
+      // ...
+    }
+  }
+  func dirents(dir string) []os.FileInfo {
+    select {
+    case sema <- struct{}{}: // acquire token
+    case <-done:
+      return nil // cancelled
+    }
+    defer func() { <-sema }() // release token
+    // ...read directory...
+  }
+#+END_SRC
+
+** 重要的测试技巧
+
+Q : 其实，你自己是很难判断是否把所有的goroutine都关闭并推出了。那么如何在main函数返回的时候，确定还有没有goroutine再运行呢？
+
+A : 在main函数退出之前，调用一个panic，看运行时堆栈信息。如果信息只有main函数的堆栈则说明所有goroutine都退出了。否则，就是说有的goroutine没有退出。
+
 * 聊天服务器
+
+#+BEGIN_SRC go
+  func main() {
+    listener, err := net.Listen("tcp", "localhost:8000")
+    if err != nil {
+      log.Fatal(err)
+    }
+    go broadcaster() // 广播消息
+    for {
+      conn, err := listener.Accept()
+      if err != nil {
+        log.Print(err)
+        continue 
+      }
+      go handleConn(conn) // 管理客户端发来的连接
+    }
+  }
+#+END_SRC
+
+#+BEGIN_SRC go
+  type client chan<- string // an outgoing message channel
+  var (
+    entering = make(chan client)
+    leaving  = make(chan client)
+    messages = make(chan string) // all incoming client messages
+  )
+  func broadcaster() {
+    clients := make(map[client]bool) // all connected clients (chan是可hash的么？)
+    for {
+      select {
+      case msg := <-messages:
+        // Broadcast incoming message to all
+        // clients' outgoing message channels.
+        for cli := range clients {
+          cli <- msg
+        }
+      case cli := <-entering:
+        clients[cli] = true
+      case cli := <-leaving:
+        delete(clients, cli)
+        close(cli)
+      }
+    }
+  }
+#+END_SRC
+
+#+BEGIN_SRC go
+  func handleConn(conn net.Conn) {
+    ch := make(chan string) // outgoing client messages
+    go clientWriter(conn, ch)
+    who := conn.RemoteAddr().String()
+    ch <- "You are " + who
+    messages <- who + " has arrived"
+    entering <- ch
+    input := bufio.NewScanner(conn)
+    for input.Scan() {
+      messages <- who + ": " + input.Text()
+    }
+    // NOTE: ignoring potential errors from input.Err()
+    leaving <- ch
+    messages <- who + " has left"
+    conn.Close()
+  }
+  func clientWriter(conn net.Conn, ch <-chan string) {
+    for msg := range ch { // 会泄露么？
+      fmt.Fprintln(conn, msg) // NOTE: ignoring network errors
+    }
+  }
+#+END_SRC
+
+
