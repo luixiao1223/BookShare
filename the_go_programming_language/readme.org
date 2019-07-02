@@ -24,6 +24,13 @@ https://gobyexample.com/
 
 https://golang.org/ref/spec
 
+* speakers
+
+1. [[https://github.com/rythmE][rythmE]]
+2. [[https://github.com/TonyHuiHUI][TonyHuiHUI]]
+3. [[https://github.com/Sevenpin][Sevenpin]]
+4. [[https://github.com/luixiao1223][luixiao1223]]
+
 * 章节分配
 
 | Chapter                              | speaker     | time             |
