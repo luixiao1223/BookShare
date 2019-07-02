@@ -990,7 +990,7 @@ A : 在main函数退出之前，调用一个panic，看运行时堆栈信息。�
 #+BEGIN_SRC go
   type client chan<- string // an outgoing message channel
   var (
-    entering = make(chan client)
+    entering = make(chan client) // 这个entering chan 将输入输出什么？ 应该是chan<- string
     leaving  = make(chan client)
     messages = make(chan string) // all incoming client messages
   )
@@ -1021,7 +1021,8 @@ A : 在main函数退出之前，调用一个panic，看运行时堆栈信息。�
     who := conn.RemoteAddr().String()
     ch <- "You are " + who
     messages <- who + " has arrived"
-    entering <- ch
+    // 把ch本身放到entering里面，不是从ch中取出string放入entering.因为entering的接收类型为chan<- string
+    entering <- ch 
     input := bufio.NewScanner(conn)
     for input.Scan() {
       messages <- who + ": " + input.Text()
