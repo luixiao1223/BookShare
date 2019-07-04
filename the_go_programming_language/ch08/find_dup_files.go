@@ -64,10 +64,10 @@ func getinfo(keychan <-chan md5Info, wg *sync.WaitGroup) {
 		vec, flag := md5map[info.key]
 		if !flag {
 			var nvec = []string{}
-			nvec = append(nvec, info.name)
+			nvec = append(nvec, info.name) // 效率有问题
 			md5map[info.key] = nvec
 		} else {
-			md5map[info.key] = append(vec, info.name)
+			md5map[info.key] = append(vec, info.name) // 效率有问题
 		}
 	}
 
