@@ -285,7 +285,7 @@ type IntSet struct {
 type IntSet []uint64
 ```
 
-- 结论2： 在Go 语言中封装的单元是包而不是类型。fixme(add an example)
+- 结论2： 在Go 语言中封装的单元是包而不是类型.
 
 ```
 package test
