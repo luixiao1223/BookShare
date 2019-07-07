@@ -66,9 +66,16 @@ func (p Greeting) Print(v string) {
 	fmt.Println(v)
 }
 
+func display(name string) string {
+	return name
+}
+
 func main() {
 	var f Greeting
 
+	f.Print("this is fine")
+	//display.Print("This is fine") // 会报错
+	f = display
 	f.Print("this is fine")
 }
 ```
