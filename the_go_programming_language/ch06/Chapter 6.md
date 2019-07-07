@@ -218,8 +218,8 @@ fmt.Println(*p.Point, *q.Point) // "{2 2} {2 2}"
 
 ```
 var (
-    mu sync.Mutex // guards mapping
-    mapping = make(map[string]string)
+    mu sync.Mutex // guards mapping 包级别变量
+    mapping = make(map[string]string) // 包级别变量
 )
 
 func Lookup(key string) string {
@@ -235,7 +235,7 @@ func Lookup(key string) string {
 var cache = struct {
          sync.Mutex
          mapping map[string]string 
-}{mapping: make(map[string]string),}
+}{mapping: make(map[string]string),} // 匿名结构体变量(ps:struct 没有名字，只使用了一次)
          
 func Lookup(key string) string {
          cache.Lock()
