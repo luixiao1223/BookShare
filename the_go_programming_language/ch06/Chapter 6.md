@@ -183,6 +183,8 @@ func main() {
 }
 ```
 
+If you don’t need to edit the receiver value, use a value receiver.Value receivers are concurrency safe, while pointer receivers are not concurrency safe.
+
 #### nil 是一个合法的接收者
 
 示例：net/url包里 Values 类型定义的一部分
