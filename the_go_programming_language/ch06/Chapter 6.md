@@ -287,6 +287,37 @@ type IntSet []uint64
 
 - 结论2： 在Go 语言中封装的单元是包而不是类型。fixme(add an example)
 
+```
+package test
+
+type Kkk struct {
+	private string
+	Public  string
+}
+```
+
+```
+package main
+
+import (
+	"./test"
+	"fmt"
+)
+
+type some struct {
+	words string
+}
+
+func main() {
+	var fine = test.Kkk{}
+	var good = some{}
+	//fmt.Println(fine.private) // 不能访问其他包中结构体中的小写开头变量
+	fmt.Println(fine.Public) // 可以访问其他包中结构体中的大写开头变量
+	good.words = "long"
+	fmt.Println(good.words) // 可以访问本包结构体中的小写开头变量
+}
+```
+
 - 封装提供了三个优点
    1. 因为使用方不能直接修改对象的变量，所以不需要更多的语句用来检查变量的值。
    2. 隐藏实现细节可以防止使用方依赖的属性发生改变，使得设计者可以更加灵活地改变 API 的实现而不破坏兼容性。
@@ -307,6 +338,6 @@ func (l *Logger) SetPrefix(prefix string)
 
 - 封装并不总是必须的，比如
 ```
-const day = 24 * time.Hour
+const day = 24 * time.Hour //day is a time.Duration
 fmt.Println(day.Seconds()) // "86400"
 ```
