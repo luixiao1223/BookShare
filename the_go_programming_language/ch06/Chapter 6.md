@@ -51,7 +51,28 @@ func (path Path) Distance() float64 {
 }
 ```
 
-- Go 和许多其他面向对象的语言不同，它可以将方法绑定到任何类型上。可以很方便地为简单的类型（如数字、字符串、slice 、map ，甚至函数等 fixme）定义附加的行为。同一个包下的任何类型都可以声明方法，只要它的类型既不是指针类型也不是接口类型。
+- Go 和许多其他面向对象的语言不同，它可以将方法绑定到任何类型上。可以很方便地为简单的类型（如数字、字符串、slice 、map ，甚至函数等）定义附加的行为。同一个包下的任何类型都可以声明方法，只要它的类型既不是指针类型也不是接口类型。
+
+```
+package main
+
+import (
+	"fmt"
+)
+
+type Greeting func(name string) string
+
+func (p Greeting) Print(v string) {
+	fmt.Println(v)
+}
+
+func main() {
+	var f Greeting
+
+	f.Print("this is fine")
+}
+```
+
 - 使用方法的第一个好处：命名可以比函数更简短。在包的外部进行调用的时候，方法能够使用更加简短的名字且省略包的名字：
 
 ```
