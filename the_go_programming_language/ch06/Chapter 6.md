@@ -113,6 +113,47 @@ Point{1, 2}.ScaleBy(2) // compile error: can't take address of Point
    1. 实参和形参类型相同
    2. 实参类型为 T 而形参为 *T
    3. 实参类型为 *T 而形参为 T
+   
+#### 指针类型接受者和非指针类型接受者的区别
+
+```
+package main
+
+import "fmt"
+
+type Mutatable struct {
+	a int
+	b int
+}
+
+func (m Mutatable) StayTheSame() { // m是传值传到StayTheSame中来的。所以这个函数中m是调用StayTheSame的变量的一个拷贝
+	m.a = 5
+	m.b = 7
+}
+
+func (m *Mutatable) Mutate() { // m 是调用Mutate的m的一个指针，这是一个巨大的区别
+	m.a = 10
+	m.b = 14
+}
+
+func main() {
+	m := &Mutatable{0, 0}
+	fmt.Println(m)
+	m.StayTheSame()
+	fmt.Println(m)
+	m.Mutate()
+	fmt.Println(m)
+
+	fmt.Println("-----------")
+
+	n := Mutatable{0, 0}
+	fmt.Println(n)
+	n.StayTheSame()
+	fmt.Println(n)
+	n.Mutate()
+	fmt.Println(n)
+}
+```
 
 #### nil 是一个合法的接收者
 
