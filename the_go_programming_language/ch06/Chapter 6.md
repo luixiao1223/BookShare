@@ -55,9 +55,9 @@ func (path Path) Distance() float64 {
 - 使用方法的第一个好处：命名可以比函数更简短。在包的外部进行调用的时候，方法能够使用更加简短的名字且省略包的名字：
 
 ```
-import "gopl.io/ch6/geomety"
+import "gopl.io/ch6/geometry"
 
-perim := geomety.Path{{l, 1}, {5, 1}, {5, 4}, {1, 1}}
+perim := geometry.Path{{l, 1}, {5, 1}, {5, 4}, {1, 1}}
 fmt.Println(geometry.PathDistance(perim)) //"12"，独立函数
 fmt.Println(perim.Distance()) //"12"geometry.Path 的方法
 ```
@@ -110,9 +110,9 @@ Point{1, 2}.ScaleBy(2) // compile error: can't take address of Point
 ```
 
 - 总结：三种合法情况
-   1. 实参和行参类型相同
-   2. 实参类型为 T 而行参为 *T
-   3. 实参类型为 *T 而实参为 T
+   1. 实参和形参类型相同
+   2. 实参类型为 T 而形参为 *T
+   3. 实参类型为 *T 而形参为 T
 
 #### nil 是一个合法的接收者
 
@@ -229,7 +229,21 @@ func Lookup(key string) string {
     return v
 }
 ```
-fixme
+
+```
+
+var cache = struct {
+         sync.Mutex
+         mapping map[string]string 
+}{mapping: make(map[string]string),}
+         
+func Lookup(key string) string {
+         cache.Lock()
+         v := cache.mapping[key]
+         cache.Unlock()
+         return v
+}
+```
 
 ### 6.4 方法变量与表达式
 
