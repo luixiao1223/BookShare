@@ -45,7 +45,7 @@ https://golang.org/ref/spec
 |--------------------------------------+-------------+------------------|
 | 6. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch06][Methods]]                           | rythmE      | 2019-07-07 20:00 |
 |--------------------------------------+-------------+------------------|
-| 7. Interfaces                        | TonyHuiHUI  | 2019-07-14 20:00 |
+| 7. Interfaces                        | TonyHuiHUI  | 2019-07-21 20:00 |
 |--------------------------------------+-------------+------------------|
 | 8. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch08][Goroutines]]                        | luixiao1223 |                  |
 |--------------------------------------+-------------+------------------|
