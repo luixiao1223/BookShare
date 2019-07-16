@@ -7,7 +7,7 @@
   go test
 #+END_SRC
 
-一个go的test文件主要文件名为 "*_test.go", 它可以包含三中函数
+一个go的test文件主要文件名为 "*_test.go", 它可以包含三种函数
 
 1. 以Test为开头的函数
    测试要么，通过不通过。
@@ -18,7 +18,126 @@
 
 *go test的机制是去搜索 "*_test.go"的文件，并用一个临时main函数包裹它并运行里面测试函数。*
 
-* 测试函数
+* COMMENT 测试函数
+
+先来看看简单的示例。
+
+注意：测试函数必须以Test开始
+
+#+BEGIN_SRC go
+  func TestName(t *testing.T) { // ...
+  }
+#+END_SRC
+
+先来看个例子，回文的例子word.go 
+
+#+BEGIN_SRC go
+  package word
+  func IsPalindrome(s string) bool {
+    for i := range s {
+      if s[i] != s[len(s)-1-i] {
+        return false
+      }
+    }
+    return true
+  }
+#+END_SRC
+
+我们如何来测试这个回文函数？，创建一个word_test.go 
+
+#+BEGIN_SRC go
+  package word
+  import "testing"
+  func TestPalindrome(t *testing.T) {
+    if !IsPalindrome("detartrated") {
+      t.Error(`IsPalindrome("detartrated") = false`)
+    }
+    if !IsPalindrome("kayak") {
+      t.Error(`IsPalindrome("kayak") = false`)
+    } }
+  func TestNonPalindrome(t *testing.T) {
+    if IsPalindrome("palindrome") {
+      t.Error(`IsPalindrome("palindrome") = true`)
+    }
+  }
+#+END_SRC
+
+如果正确会是如下
+#+BEGIN_SRC sh
+  $ go test
+  ok   gopl.io/ch11/word1  0.008s
+#+END_SRC
+
+错误是如下
+#+BEGIN_SRC go
+  $ go test
+  --- FAIL: TestFrenchPalindrome (0.00s)
+  word_test.go:28: IsPalindrome("été") = false
+  --- FAIL: TestCanalPalindrome (0.00s)
+  word_test.go:35: IsPalindrome("A man, a plan, a canal: Panama") = false
+  FAIL
+  FAIL    gopl.io/ch11/word1  0.014s
+#+END_SRC
+
+可以输出更为详细的信息(verbose)
+
+#+BEGIN_SRC sh
+  $ go test -v
+#+END_SRC
+
+用正则表达式运行其中一部分函数
+
+#+BEGIN_SRC sh
+  $ go test -v -run="French|Canal"
+#+END_SRC
+
+把测试用例放到一个表里面挨个测试
+
+#+BEGIN_SRC go
+  func TestIsPalindrome(t *testing.T) {
+    var tests = []struct {
+      input string
+      want bool
+    }{
+      {"", true},
+      {"a", true},
+      {"aa", true},
+      {"ab", false},
+      {"kayak", true},
+      {"detartrated", true},
+      {"A man, a plan, a canal: Panama", true},
+      {"Evil I did dwell; lewd did I live.", true},
+      {"Able was I ere I saw Elba", true},
+      {"été", true},
+      {"Et se resservir, ivresse reste.", true},
+      {"palindrome", false}, // non-palindrome
+      {"desserts", false},   // semi-palindrome
+    }
+    for _, test := range tests {
+      if got := IsPalindrome(test.input); got != test.want {
+        t.Errorf("IsPalindrome(%q) = %v", test.input, got)
+      }
+    }
+  }
+#+END_SRC
+
+注意：
+
+1. 如果测试t.Errorf并不会引发panic所以如果你想中断，自己写t.Fatalf来做。
+2. 测试t.Errorf应尽量输出有用的信息
+
+** 随机测试
+
+** 测试命令
+
+** 白盒测试
+
+** 外部测试包
+
+** 编写有效测试
+
+** 避免脆弱测试
+
 * 覆盖率
 * benchmark函数
 * 性能剖析
