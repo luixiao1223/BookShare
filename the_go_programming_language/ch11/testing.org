@@ -1,6 +1,23 @@
 #+TITLE: testing
 
 * go测试工具
+
+测试是go的一个子命令
+#+BEGIN_SRC sh
+  go test
+#+END_SRC
+
+一个go的test文件主要文件名为 "*_test.go", 它可以包含三中函数
+
+1. 以Test为开头的函数
+   测试要么，通过不通过。
+2. 以Benchmark开头的函数
+   会产生一个运行时间统计
+3. 以Example开头的函数
+   是一个样例展示函数
+
+*go test的机制是去搜索 "*_test.go"的文件，并用一个临时main函数包裹它并运行里面测试函数。*
+
 * 测试函数
 * 覆盖率
 * benchmark函数
