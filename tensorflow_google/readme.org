@@ -1,0 +1,24 @@
+#+TITLE: The Go Programming Language
+
+* 时间
+
+| From | To |
+|------+----|
+|      |    |
+
+* 学习资源
+
+** 书籍
+
+** 源代码
+
+* speakers
+
+1. 
+2. [[https://github.com/luixiao1223][luixiao1223]]
+
+* 章节分配
+
+| Chapter | speaker | time |
+|---------+---------+------|
+|         |         |      |
