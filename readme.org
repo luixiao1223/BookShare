@@ -1,5 +1,6 @@
 #+TITLE: 读书分享
 
 * [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language][GO语言程序设计(the go programming language)]]
+* [[https://github.com/luixiao1223/BookShare/tree/master/tensorflow_google][tensforflow 实战google深度学习框架]]
 
 
