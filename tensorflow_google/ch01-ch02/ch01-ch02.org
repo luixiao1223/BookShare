@@ -55,3 +55,105 @@ Andrew NG:机器学习落地还要靠监督性学习
    Sentiment Treebank
 
 * CH02
+** TensorFlow 主要依赖的包
+
+*** Protocol Buffer 
+
+处理结构数据的工具。类似的工具XML，JSON.
+
+#+BEGIN_SRC js
+  message user{
+    optional string name=1;
+    required int32 id=2;
+    repeated string email=3;
+  }
+#+END_SRC
+
+*** Bazel
+
+就是一个编译工具，类似make
+
+#+BEGIN_SRC sh
+  BUILD
+  hello_lib.py
+  hello_main.py
+  WORKSPACE // NULL
+#+END_SRC
+
+其中hello_lib.py
+#+BEGIN_SRC python
+  def print_hello_world():
+      print("Hello World")
+#+END_SRC
+
+hello_main.py
+#+BEGIN_SRC python
+  import hello_lib
+  hello_lib.print_hello_world()
+#+END_SRC
+
+BUILD
+
+#+BEGIN_SRC python
+  py_library{
+      name = "hello_lib",
+      srcs = {
+          "hello_lib.py",
+      }
+  }
+
+  py_binary{
+      name = "hello_main",
+      srcs = {
+          "hello_main.py",
+      },
+      deps = {
+          ":hello_lib",
+      }
+  }
+#+END_SRC
+
+#+BEGIN_SRC sh
+  bazel build:hello_main
+#+END_SRC
+
+** TensorFlow 安装
+
+*** Docker安装
+
+CPU版
+#+BEGIN_SRC sh
+  docker run -it tensorflow/tensorflow:l.4.0
+#+END_SRC
+
+先安装nvidia-docker
+GPU版
+#+BEGIN_SRC sh
+  nvidia-docker run -it tensorflow/tensorflow:l.4.0-gpu
+#+END_SRC
+
+*** pip
+
+#+BEGIN_SRC sh
+  pip install tensorflow
+#+END_SRC
+
+
+** TensorFlow 测试样例
+
+#+BEGIN_SRC python
+  import tensorflow as tf
+
+  a = tf.constant([1,2],name="a")
+  b = tf.constant([2,3],name="b")
+
+  result = a + b
+
+  sess = tf.compat.v1.Session() ## 兼容旧版本
+  print(sess.run(result)) ## 输出结果
+#+END_SRC
+
+
+
+
+
