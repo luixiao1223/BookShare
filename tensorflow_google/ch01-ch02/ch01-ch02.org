@@ -138,7 +138,6 @@ GPU版
   pip install tensorflow
 #+END_SRC
 
-
 ** TensorFlow 测试样例
 
 #+BEGIN_SRC python
