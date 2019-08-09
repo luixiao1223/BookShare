@@ -17,7 +17,7 @@ Tensorflow 实战Google深度学习框架(2nd)
 
 * speakers
 
-1. 
+1. [[https://github.com/Nemoice][Nemoice]]
 2. [[https://github.com/luixiao1223][luixiao1223]]
 
 * 章节分配
@@ -25,4 +25,7 @@ Tensorflow 实战Google深度学习框架(2nd)
 | Chapter | speaker     | time             |
 |---------+-------------+------------------|
 |     [[https://github.com/luixiao1223/BookShare/tree/master/tensorflow_google/ch01-ch02][1-2]] | liuxiao1223 | 2019-08-09 21:00 |
-|       3 |             |                  |
+|       3 | Nemoice     |                  |
+|       4 | liuxiao1223 |                  |
+
+
