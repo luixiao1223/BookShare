@@ -10,6 +10,7 @@
 
 #+BEGIN_SRC sh
   git commit -m "add"
+  git commit hello.py -m "add"
 #+END_SRC
 
 * push
