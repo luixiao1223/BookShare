@@ -1,0 +1,32 @@
+#+TITLE: git简单应用
+
+* 添加新文件
+
+#+BEGIN_SRC sh
+  git add newfile.py
+#+END_SRC
+
+* 提交
+
+#+BEGIN_SRC sh
+  git commit -m "add"
+#+END_SRC
+
+* push
+
+#+BEGIN_SRC sh
+  git push
+#+END_SRC
+
+* 查日志索引
+
+#+BEGIN_SRC sh
+  git log newfile.py
+#+END_SRC
+
+* 看日志内容
+
+#+BEGIN_SRC sh
+  git show 4fab13cead795e393b3b3fe1991a5b61ecab4c68
+#+END_SRC
+
