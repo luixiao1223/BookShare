@@ -151,8 +151,3 @@ GPU版
   sess = tf.compat.v1.Session() ## 兼容旧版本
   print(sess.run(result)) ## 输出结果
 #+END_SRC
-
-
-
-
-

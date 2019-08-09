@@ -173,7 +173,6 @@ $(document).ready(function () {
 
 
 # Markdown 高级技巧
-
 ## 支持的 HTML 元素
 
 使用 <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Del</kbd> 重启电脑
