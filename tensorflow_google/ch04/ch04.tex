@@ -1,0 +1,87 @@
+\documentclass{article} \usepackage{braket} \usepackage{amsmath,amssymb} \usepackage{geometry} \usepackage{graphicx} \usepackage{fancyvrb}\usepackage{braket} \usepackage{bm}\usepackage{hyperref} \usepackage{CJKutf8} \geometry{left=0.2cm,right=0.2cm,top=0.2cm,bottom=0.2cm} \renewcommand{\theequation}{\arabic{section}.\arabic{equation}} \renewcommand{\baselinestretch}{1.5}
+\begin{document}
+\begin{CJK}{UTF8}{gbsn}
+
+  \section{深度学习与深层神经网路}
+\label{sec:orgc7a7aa1}
+\begin{enumerate}
+\item 深度学习就是深层神经网络的代名词
+\item 深度学习最重要的两个特性
+\begin{itemize}
+\item 多层
+\item 非线性
+\end{itemize}
+\end{enumerate}
+
+\subsection{线性模型的局限性}
+\label{sec:org86497f4}
+
+最早的神经网络采用线性模型
+
+$$
+  y=\sum_{i}w_ix_i+b
+$$
+
+$$
+  a^{(1)}=xW^{(1)},y=a^{(1)}W^{(2)}
+$$
+
+$$
+  y=(xW^{(1)})W^{(2)}\rightarrow y=x(W^{(1)}W^{(2)})=xW^{'}
+$$
+
+$$
+  y=xW^{'}=\left[
+\begin{array}{cc}
+  x_1 & x_2 
+\end{array}
+\right]\left[
+\begin{array}{c}
+  W_1^{'} \\
+  W_2^{'} 
+\end{array}
+\right]=\left[
+\begin{array}{cc}
+  W_{1}^{'}x_1 & W_2^{'} x_2
+\end{array}
+  \right]
+$$
+
+线性模型不能解决异或问题。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\linewidth]{xor.jpg}
+\end{figure}	
+
+\subsection{激活函数实现去线性化}
+\label{sec:org420e81a}
+
+\subsection{多层神经网络解决异或语言}
+\label{sec:org32c6c09}
+
+\section{损失函数}
+\label{sec:org8d79a79}
+
+\subsection{经典损失函数}
+\label{sec:org5239194}
+\subsection{自定义损失函数}
+\label{sec:org2b3e954}
+
+\section{神经网络优化算法}
+\label{sec:org90a2418}
+\section{神经网络进一步优化}
+\label{sec:org5f20e0b}
+
+\subsection{学习率的设置}
+\label{sec:org11bb285}
+
+\subsection{过拟合问题}
+\label{sec:org9516d59}
+
+\subsection{滑动平均模型}
+\label{sec:org8864399}
+  
+  
+\end{CJK}
+\end{document}
