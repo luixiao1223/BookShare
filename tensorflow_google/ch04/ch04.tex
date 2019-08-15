@@ -1,4 +1,4 @@
-\documentclass{article}\usepackage{listings} \usepackage{braket} \usepackage{amsmath,amssymb} \usepackage{geometry} \usepackage{graphicx} \usepackage{fancyvrb}\usepackage{braket} \usepackage{bm}\usepackage{hyperref} \usepackage{CJKutf8} \geometry{left=0.2cm,right=0.2cm,top=0.2cm,bottom=0.2cm} \renewcommand{\theequation}{\arabic{section}.\arabic{equation}} \renewcommand{\baselinestretch}{1.5}
+\documentclass{article}\usepackage{float}\usepackage{listings} \usepackage{braket} \usepackage{amsmath,amssymb} \usepackage{geometry} \usepackage{graphicx} \usepackage{fancyvrb}\usepackage{braket} \usepackage{bm}\usepackage{hyperref} \usepackage{CJKutf8} \geometry{left=0.2cm,right=0.2cm,top=0.2cm,bottom=0.2cm} \renewcommand{\theequation}{\arabic{section}.\arabic{equation}} \renewcommand{\baselinestretch}{1.5}
 \begin{document}
 \begin{CJK}{UTF8}{gbsn}
 
@@ -59,8 +59,9 @@ $$
 
 如何做的？
 
-\begin{figure}[htbp]
+\begin{figure}[H]
   \centering \includegraphics[width=0.6\linewidth]{nonlinear.png}
+  \caption{加入非线性的激活函数图}
 \end{figure}
 
 \begin{displaymath}
@@ -71,6 +72,7 @@ $$
 
 \begin{figure}[htbp]
   \centering \includegraphics[width=0.8\linewidth]{act.png}
+  \caption{常用的激活函数}
 \end{figure}
 
 \begin{lstlisting}[language=python]
@@ -81,7 +83,23 @@ $$
 \subsection{多层神经网络解决异或语言}
 \label{sec:org32c6c09}
 
-理论上不可以的原因？（这个可以列一个专题还讲）FIXME
+感知机理论上不可以的原因？（这个可以列一个专题来讲）FIXME 参考书籍《Perceptions:An Introtudction to Computational Geometry》 MIT Press,1969
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\linewidth]{perc.png}
+  \caption{perception}
+  \label{nosome}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\linewidth]{deep.png}
+  \caption{hidden layer for xor}
+  \label{tdkks1}
+\end{figure}
+
+可以看到通过隐藏层，我们可以抽象出更为高维的信息。这些信息就可以用来分类数据。从而得到更好的分类结果。
 
 \section{损失函数}
 \label{sec:org8d79a79}
