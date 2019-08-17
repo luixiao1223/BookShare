@@ -106,6 +106,105 @@ $$
 
 \subsection{经典损失函数}
 \label{sec:org5239194}
+
+神经网络如何输出多分类问题。比如3分类问题。苹果、香蕉、梨。
+
+\begin{displaymath}
+  \mbox{苹果}=\left(
+    \begin{array}{c}
+      1 \\
+      0 \\
+      0 
+    \end{array}
+  \right),\mbox{香蕉}=\left(
+    \begin{array}{c}
+      0 \\
+      1 \\
+      0 
+    \end{array}
+  \right),\mbox{梨}=\left(
+    \begin{array}{c}
+      0 \\
+      0 \\
+      1 
+    \end{array}
+  \right)
+\end{displaymath}
+
+如何比较输出值与预期值之间的差距？ \textbf{交叉熵}。
+
+交叉熵是用来衡量两个概率分布之间的距离的函数。它是分类问题中比较常见的损失函数。其定义为
+
+\begin{displaymath}
+  H(p,q)=-\sum_{x}p(x)log[q(x)]
+\end{displaymath}
+
+如何将神经网络的结果变成一个概率分布？使用softmax函数。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\linewidth]{softchange.png}
+\end{figure}
+
+加入神经网络的原始输出为$\{y_1,y_2,...,y_n\}$
+\begin{displaymath}
+  \operatorname{softmax}(y)_{i}=y_{i}^{\prime}=\frac{e^{y i}}{\sum_{j=1}^{n} e^{y j}}
+\end{displaymath}
+
+这个函数满足，概率分布的所有条件。这样就把神经网络的输出改成了一个概率分布。这样就可以计算交叉熵了。
+
+但是需要注意的一点是交叉熵并不是对称的
+
+\begin{displaymath}
+  H(p,q)\neq H(q,p)
+\end{displaymath}
+
+比如我们可以这样来表述交叉熵$H(p,q)$,用q来刻画p的困哪程度。
+
+\begin{lstlisting}[language=python]
+  cross_entropy = -tf.reduce_mean(y_ * tf.log(tf.clip_by_value(y, le-10, 1.0)))
+\end{lstlisting}
+
+\begin{lstlisting}[language=python]
+  v = tf.constant([[l.0, 2.0, 3.0], [4.0,5.0,6.0])) 
+  print tf.clip_by_value(v, 2.5, 4.5).eval() 
+  #Output[[2.5 2.5 3.][ 4. 4.5 4.5]]
+\end{lstlisting}
+
+\begin{lstlisting}[language=python]
+  v = tf.constant([1.0, 2.0, 3.0]) 
+  print tf.log(v) .eval( )
+  #Output[ 0. 0.69314718 1.09861231]
+\end{lstlisting}
+
+\begin{lstlisting}[language=python]
+  vl = tf.constant([[l.O, 2 .0], [3.0 , 4.0]]) 
+  v2 = tf.constant([[5.0, 6.0], (7.0, 8.0]])
+  print (vl *v2).eval()              #Output[[ 5. 12.] [ 21. 32.])
+  print tf.matmul(vl , v2) .eval()   #Output[[ 19. 22.) [ 43. 50.)]
+\end{lstlisting}
+
+\begin{displaymath}
+  \left(
+    \begin{array}{cc}
+      1 & 2 \\
+      3 & 4 
+    \end{array}
+  \right)*\left(
+    \begin{array}{cc}
+      5 & 6 \\
+      7 & 8 
+    \end{array}
+  \right)=\left(
+    \begin{array}{cc}
+      5 & 12 \\
+      21 & 32 
+    \end{array}
+  \right)
+\end{displaymath}
+
+
+
 \subsection{自定义损失函数}
 \label{sec:org2b3e954}
 
