@@ -2,5 +2,5 @@
 
 * [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language][GO语言程序设计(the go programming language)]]
 * [[https://github.com/luixiao1223/BookShare/tree/master/tensorflow_google][tensorflow 实战google深度学习框架]]
-http://localhost:8888/?token=2e6d76845a02c0b05cfcc9cd0db3f301a82a1e8755ca62c6
+
 
