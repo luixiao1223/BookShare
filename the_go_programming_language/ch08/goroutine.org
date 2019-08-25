@@ -249,8 +249,29 @@
 #+BEGIN_SRC go
   ch = make(chan int)     // 无缓冲通道
   ch = make(chan int, 0)  // 无缓冲通道
+  ch = make(chan int, 1)  // 容量为1的通道
   ch = make(chan init, 3) // 容量为3的通道
 #+END_SRC
+
+无缓冲通道和容量为1的通道是不一样的两种通道。
+
+#+BEGIN_SRC go
+  ch = make(chan int, 1)  // 容量为1的通道
+  ch <- 10
+  fmt.Println("something") // 在ch<-10之后立即执行
+#+END_SRC
+
+#+BEGIN_SRC go
+  // goroutine 1
+  ch = make(chan int, 0)  // 容量为1的通道
+  ch <- 10 // 阻塞住
+  fmt.Println("something") // 不会立即执行
+
+  // goroutine 2
+  <-ch // 当这句话被执行的时候goroutine 1中的阻塞才会被消除。
+#+END_SRC
+
+第一个向无缓冲通道里面写入或提取输出的goroutine都会阻塞，直到第二个goroutine去提出或者写入数据。不同于缓冲为1的通道。这也是为什么无缓冲通道可以用来同步两个goroutine的原因。
 
 ** 无缓冲通道
 
