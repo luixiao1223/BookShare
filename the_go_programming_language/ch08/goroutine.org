@@ -289,7 +289,7 @@
       log.Println("done")
       done <- struct{}{} // signal the main goroutine
     }()
-    mustCopy(conn, os.Stdin)//注意主程序只执行到这一步，就卡住了。
+    mustCopy(conn, os.Stdin)//注意主程序只执行到这一步，就卡住了。因为要读取键盘输入。
     conn.Close()
     <-done // wait for background goroutine to finish
   }
@@ -441,8 +441,8 @@
   func request(hostname string) (response string) {/* ... */}
 #+END_SRC
 
-1. 如果采用无缓冲的chan，那么慢的两个goroutine就会卡住。不会被释放掉，因为没有东西来接收这两goroutine的返回。
-2. 具体是怎么泄露的？ fixme
+1. 如果采用无缓冲的chan，那么慢的两个goroutine就会卡住。不会被释放掉，因为这两个goroutine阻塞住了，无法运行。
+2. 具体是怎么泄露的？ fix
 
 * 并行循环
 
