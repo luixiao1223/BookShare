@@ -365,7 +365,7 @@
 1. 关闭每一个通道不是必须的。
 2. 通道的关闭是通过是否可以访问来确定是否资源回收。而不是是否关闭
 
-** 单项通道类型
+** 单向通道类型
 
 #+BEGIN_SRC go
   func counter(out chan<- int) {
@@ -406,7 +406,7 @@
   fmt.Println(len(ch)) // 2 当前有多少个元素在里面
 #+END_SRC
 
-1. 注意不能把管道当做队列来用。因为使用队列来用少有不甚，会导致程序卡住。
+1. 注意不能把管道当做队列来用。因为使用队列来用稍有不甚，会导致程序卡住。
 
 #+BEGIN_SRC go
   func mirroredQuery() string {
@@ -420,7 +420,7 @@
   func request(hostname string) (response string) {/* ... */}
 #+END_SRC
 
-1. 如果采用无缓冲的chan，那么慢的两个goroutine就会卡卡住。不会被释放掉，因为没有东西来接收这两goroutine的返回。
+1. 如果采用无缓冲的chan，那么慢的两个goroutine就会卡住。不会被释放掉，因为没有东西来接收这两goroutine的返回。
 2. 具体是怎么泄露的？ fixme
 
 * 并行循环
@@ -719,7 +719,7 @@ Q:为什么会造成goroutine协奏，goroutine泄露的原理是什么？
 ** 注意事项
 *** 多个 chan 同时有数据的时候怎么办？
 
-随即选择一个执行
+随机选择一个执行
 
 *** goroutine泄露
 
@@ -746,7 +746,7 @@ Q:为什么会造成goroutine协奏，goroutine泄露的原理是什么？
 #+BEGIN_SRC go
   ticker := time.NewTicker(1 * time.Second)
   <-ticker.C // receive from the ticker's channel
-  ticker.Stop() // cause the ticker's goroutine to terminate
+  ticker.Stop() // cause the ticker's goroutine to terminate (FIXME)
 #+END_SRC
 
 *** 非阻塞信道
@@ -763,7 +763,7 @@ Q:为什么会造成goroutine协奏，goroutine泄露的原理是什么？
 
 *** nil chan
 
-网nil chan发送或者接受数据都是永久阻塞。
+往nil chan发送或者接受数据都是永久阻塞。
 
 #+BEGIN_SRC go
   nil <- "some" // 发送
