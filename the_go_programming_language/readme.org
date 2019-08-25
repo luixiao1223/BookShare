@@ -47,9 +47,9 @@ https://golang.org/ref/spec
 |--------------------------------------+-------------+------------------|
 | 7. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch07][Interfaces]]                        | TonyHuiHUI  | 2019-07-28 20:00 |
 |--------------------------------------+-------------+------------------|
-| 8. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch08][Goroutines]]                        | luixiao1223 | 2019-08-18 20:00 |
+| 8. [[https://github.com/luixiao1223/BookShare/tree/master/the_go_programming_language/ch08][Goroutines]]                        | luixiao1223 | 2019-08-25 20:00 |
 |--------------------------------------+-------------+------------------|
-| 9. Concurrency with Shared Variables | rythmE      |                  |
+| 9. Concurrency with Shared Variables | rythmE      | 2019-09-01 20:00 |
 |--------------------------------------+-------------+------------------|
 | 10. Packages and the Go Tool         | TonyHuiHUI  |                  |
 |--------------------------------------+-------------+------------------|
