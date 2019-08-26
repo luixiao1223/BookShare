@@ -263,7 +263,7 @@
 
 #+BEGIN_SRC go
   // goroutine 1
-  ch = make(chan int, 0)  // 容量为1的通道
+  ch = make(chan int, 0)  // 容量为0的通道
   ch <- 10 // 阻塞住
   fmt.Println("something") // 不会立即执行
 
