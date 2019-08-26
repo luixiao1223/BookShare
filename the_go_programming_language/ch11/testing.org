@@ -374,11 +374,54 @@ NOTE:
 
 ** 外部测试包
 
+[[./xunhuan.png]]
+[[file:%E6%B5%8B%E8%AF%95%E5%87%BD%E6%95%B0/screenshot_2019-08-26_14-57-44.png]]
+*** 包内测试
+和代码写相同的包名
+
+*** 包外测试
+
+比如写
+
+#+BEGIN_SRC go
+  package url_test //和url不是一个包，但是可以引入url和http包来测试url包
+#+END_SRC
+
+*** 如何判断一个包的文件种类
+
+**** 一般文件
+
+#+BEGIN_SRC sh
+$ go list -f={{.GoFiles}} fmt
+[doc.go format.go print.go scan.go]
+#+END_SRC
+
+**** 包内测试文件
+
+#+BEGIN_SRC sh
+$ go list -f={{.TestGoFiles}} fmt
+[export_test.go]
+#+END_SRC
+
+**** 包外测试
+
+#+BEGIN_SRC sh
+$ go list -f={{.XTestGoFiles}} fmt
+[fmt_test.go scan_test.go stringer_test.go]
+#+END_SRC
+
+*** 如何让包外测试访问到包内的变量？
+
+专门写一个export_test.go来暴露包内测试的变量。这样外部测试包就可以访问包内的变量了。
+
 ** 编写有效测试
+1. go的测试非常简单，go的逻辑是，让写代码的人来维护代码。所以代码和测试代码差不多。
+2. 不要在测试里面panic，这样是无效的测试。因为没有为维护者提供信息。
 
 ** 避免脆弱测试
-
+测试如果不稳定，那么程序编写人员会非常难受。
 * 覆盖率
+
 * benchmark函数
 * 性能剖析
 * Example函数
