@@ -421,7 +421,77 @@ $ go list -f={{.XTestGoFiles}} fmt
 ** 避免脆弱测试
 测试如果不稳定，那么程序编写人员会非常难受。
 * 覆盖率
+#+BEGIN_SRC sh
+go test -v -run=Coverage gopl.io/ch7/eval
+go test -run=Coverage -coverprofile=c.out gopl.io/ch7/eval
+-covermode=count ##可以显示代码被执行的次数
+#+END_SRC
+
+覆盖率不是总会百分之100执行，比如有的代码可能永远不会执行到
 
 * benchmark函数
+1. 函数名要以Benchmark开头
+2. *testing.T作为函数参数
+
+#+BEGIN_SRC go
+  import "testing"
+  func BenchmarkIsPalindrome(b *testing.B) {
+    for i := 0; i < b.N; i++ {
+      IsPalindrome("A man, a plan, a canal: Panama")
+    }
+  }
+#+END_SRC
+
+#+BEGIN_SRC sh
+go test -bench=.
+go test -bench=. -benchmem ##可以查看内存情况。
+#+END_SRC
+
+最后会产生报告，其中N是测试命令自己会根据程序运行情况调整大小的。最后可以从报告中看出来大小。
+
 * 性能剖析
+
+1. 不要过早优化。
+2. 如何优化关键代码？使用工具剖析，不要使用靠自己的直觉。因为关键代码很有可能和你的直觉不一样。
+
+** 三中性能剖析工具
+
+#+BEGIN_SRC sh
+ $ go test -cpuprofile=cpu.out     ## cpu
+ $ go test -blockprofile=block.out ## 阻塞
+ $ go test -memprofile=mem.out     ## 内存
+#+END_SRC
+
+** 运行时内存剖析
+
+1. 长时间运行的程序分析，无法如上面那样仅仅启动分析就行。
+2. 可以使用runtime API来启动
+
+** 性能剖析工具
+
+如果运行时产生了数据，那么就可以用工具来分析
+
+#+BEGIN_SRC sh
+go tool pprof
+#+END_SRC
+
+更过的关于性能剖析的方法，请参考阅读Profiling Go Programs【博客】
+
 * Example函数
+
+#+BEGIN_SRC go
+  func ExampleIsPalindrome() {
+    fmt.Println(IsPalindrome("A man, a plan, a canal: Panama"))
+    fmt.Println(IsPalindrome("palindrome"))
+    // Output:
+    // true
+    // false
+  }
+
+#+END_SRC
+
+1. 示例作用
+2. 如果包含Output测试函数回去运行它，并检测输出是否一致。
+3. 展示在web-based的应用中。
+
+
