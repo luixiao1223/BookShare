@@ -4,7 +4,7 @@
 
 测试是go的一个子命令
 #+BEGIN_SRC sh
-  go test
+  go test ## go run
 #+END_SRC
 
 一个go的test文件主要文件名为 "*_test.go", 它可以包含三种函数
@@ -20,6 +20,7 @@
 
 * 测试函数
 
+** 测试函数
 先来看看简单的示例。
 
 注意：测试函数必须以Test开始
@@ -128,9 +129,248 @@
 
 ** 随机测试
 
+随机函数要注意保留该有的随机种子。方便问题复现
+
+*** 用一个更为清晰简单但是正确的方法实现功能
+
+*** 写一个函数还产生测试数据
+
+gen->[(test_1,result_1),(test_2,result_2],(test_3, result_3),...,(test_n,result_n))
+
+#+BEGIN_SRC go
+  //!+random
+  // randomPalindrome returns a palindrome whose length and contents
+  // are derived from the pseudo-random number generator rng.
+  func randomPalindrome(rng *rand.Rand) string {
+    n := rng.Intn(25) // random length up to 24
+    runes := make([]rune, n)
+    for i := 0; i < (n+1)/2; i++ {
+      r := rune(rng.Intn(0x1000)) // random rune up to '\u0999'
+      runes[i] = r
+      runes[n-1-i] = r
+    }
+    return string(runes)
+  }
+
+  func TestRandomPalindromes(t *testing.T) {
+    // Initialize a pseudo-random number generator.
+    seed := time.Now().UTC().UnixNano()
+    t.Logf("Random seed: %d", seed)
+    rng := rand.New(rand.NewSource(seed))
+
+    for i := 0; i < 1000; i++ {
+      p := randomPalindrome(rng)
+      if !IsPalindrome(p) {
+        t.Errorf("IsPalindrome(%q) = false", p)
+      }
+    }
+  }
+#+END_SRC
+
 ** 测试命令
+测试带命令行的程序
+
+*** 命令行函数
+#+BEGIN_SRC go
+  var (
+    n = flag.Bool("n", false, "omit trailing newline")
+    s = flag.String("s", " ", "separator")
+  )
+
+  var out io.Writer = os.Stdout // modified during testing
+
+  func main() {
+    flag.Parse()
+    if err := echo(!*n, *s, flag.Args()); err != nil {
+      fmt.Fprintf(os.Stderr, "echo: %v\n", err)
+      os.Exit(1)
+    }
+  }
+
+  func echo(newline bool, sep string, args []string) error {
+    fmt.Fprint(out, strings.Join(args, sep))
+    if newline {
+      fmt.Fprintln(out)
+    }
+    return nil
+  }
+#+END_SRC
+
+如何测试这个函数？
+
+#+BEGIN_SRC sh
+>> go run echo.go -n=false -s="'" some some some
+>> some'some'some
+#+END_SRC
+
+
+*** 测试代码
+#+BEGIN_SRC go
+  func TestEcho(t *testing.T) {
+    var tests = []struct {
+      newline bool
+      sep     string
+      args    []string
+      want    string
+    }{
+      {true, "", []string{}, "\n"},
+      {false, "", []string{}, ""},
+      {true, "\t", []string{"one", "two", "three"}, "one\ttwo\tthree\n"},
+      {true, ",", []string{"a", "b", "c"}, "a,b,c\n"},
+      {false, ":", []string{"1", "2", "3"}, "1:2:3"},
+    }
+
+    for _, test := range tests {
+      descr := fmt.Sprintf("echo(%v, %q, %q)",
+        test.newline, test.sep, test.args)
+
+      out = new(bytes.Buffer) // captured output 这里修改了包体变量out原本为stdout现在为一个buffer
+      if err := echo(test.newline, test.sep, test.args); err != nil {
+        t.Errorf("%s failed: %v", descr, err)
+        continue
+      }
+      got := out.(*bytes.Buffer).String()
+      if got != test.want {
+        t.Errorf("%s = %q, want %q", descr, got, test.want)
+      }
+    }
+  }
+#+END_SRC
+
+NOTE:
+
+1. 在测试的代码里面不要调用 log.Fatal 或者 os.Exit，因为这两个调用会阻止跟踪的过程，这两个函数的调用可以认为是main函数的特权 。
 
 ** 白盒测试
+
+1. 回文测试是黑盒测试
+2. echo测试是白盒测试（因为我们修改echo的变量out，所以实际上我们是知道echo程序的代码结构的）
+
+*** 邮件空间预警
+
+#+BEGIN_SRC go
+  var usage = make(map[string]int64)
+
+  func bytesInUse(username string) int64 { return usage[username] }
+
+  // Email sender configuration.
+  // NOTE: never put passwords in source code!
+  const sender = "notifications@example.com"
+  const password = "correcthorsebatterystaple"
+  const hostname = "smtp.example.com"
+
+  const template = `Warning: you are using %d bytes of storage,
+  %d%% of your quota.`
+
+  func CheckQuota(username string) {
+    used := bytesInUse(username)
+    const quota = 1000000000 // 1GB
+    percent := 100 * used / quota
+    if percent < 90 {
+      return // OK
+    }
+    msg := fmt.Sprintf(template, used, percent)
+    auth := smtp.PlainAuth("", sender, password, hostname)
+    err := smtp.SendMail(hostname+":587", auth, sender,
+      []string{username}, []byte(msg))
+    if err != nil {
+      log.Printf("smtp.SendMail(%s) failed: %s", username, err)
+    }
+  }
+
+#+END_SRC
+
+函数功能：当用户的使用空间炒股90percent的时候，发送一封邮件给用户。
+
+为了测试这个功能是否正确。我们改变源码。把notifyUser抽象出来做一个发送邮件的函数
+
+#+BEGIN_SRC go
+  var usage = make(map[string]int64)
+
+  func bytesInUse(username string) int64 { return usage[username] }
+
+  // E-mail sender configuration.
+  // NOTE: never put passwords in source code!
+  const sender = "notifications@example.com"
+  const password = "correcthorsebatterystaple"
+  const hostname = "smtp.example.com"
+
+  const template = `Warning: you are using %d bytes of storage,
+  %d%% of your quota.`
+
+  //!+factored
+  var notifyUser = func(username, msg string) {
+    auth := smtp.PlainAuth("", sender, password, hostname)
+    err := smtp.SendMail(hostname+":587", auth, sender,
+      []string{username}, []byte(msg))
+    if err != nil {
+      log.Printf("smtp.SendMail(%s) failed: %s", username, err)
+    }
+  }
+
+  func CheckQuota(username string) {
+    used := bytesInUse(username)
+    const quota = 1000000000 // 1GB
+    percent := 100 * used / quota
+    if percent < 90 {
+      return // OK
+    }
+    msg := fmt.Sprintf(template, used, percent)
+    notifyUser(username, msg)
+  }
+#+END_SRC
+
+测试90功能是否正确，替换掉原来的notifyUser，不做实际发送操作。
+
+#+BEGIN_SRC go
+  func TestCheckQuotaNotifiesUser(t *testing.T) {
+    var notifiedUser, notifiedMsg string
+    notifyUser = func(user, msg string) {
+      notifiedUser, notifiedMsg = user, msg
+    }
+
+    const user = "joe@example.org"
+    usage[user] = 980000000 // simulate a 980MB-used condition
+
+    CheckQuota(user)
+    if notifiedUser == "" && notifiedMsg == "" {
+      t.Fatalf("notifyUser not called")
+    }
+    if notifiedUser != user {
+      t.Errorf("wrong user (%s) notified, want %s",
+        notifiedUser, user)
+    }
+    const wantSubstring = "98% of your quota"
+    if !strings.Contains(notifiedMsg, wantSubstring) {
+      t.Errorf("unexpected notification message <<%s>>, "+
+        "want substring %q", notifiedMsg, wantSubstring)
+    }
+  }
+
+  //!-test
+#+END_SRC
+
+恢复现场
+
+#+BEGIN_SRC go
+  func TestCheckQuotaNotifiesUser(t *testing.T) {
+    // Save and restore original notifyUser.
+    saved := notifyUser
+    defer func() { notifyUser = saved }()
+
+    // Install the test's fake notifyUser.
+    var notifiedUser, notifiedMsg string
+    notifyUser = func(user, msg string) {
+      notifiedUser, notifiedMsg = user, msg
+    }
+    // ...rest of test...
+  }
+#+END_SRC
+
+*** 总结一下白盒测试的过程
+1. 替换掉原本的函数
+2. 测试
+3. 回复现场
 
 ** 外部测试包
 
