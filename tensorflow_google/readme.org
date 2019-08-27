@@ -25,7 +25,7 @@
 | Chapter | speaker     | time             |
 |---------+-------------+------------------|
 |     [[https://github.com/luixiao1223/BookShare/tree/master/tensorflow_google/ch01-ch02][1-2]] | liuxiao1223 | 2019-08-09 21:00 |
-|       3 | Nemoice     |                  |
+|       3 | Nemoice     | 2019-08-30 21:00 |
 |       4 | liuxiao1223 |                  |
 
 
