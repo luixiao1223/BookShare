@@ -167,7 +167,7 @@ gen->[(test_1,result_1),(test_2,result_2],(test_3, result_3),...,(test_n,result_
   }
 #+END_SRC
 
-** 测试命令
+** 测试命令(运用了白盒测试)
 测试带命令行的程序
 
 *** 命令行函数
@@ -475,7 +475,7 @@ go test -bench=. -benchmem ##可以查看内存情况。
 go tool pprof
 #+END_SRC
 
-更过的关于性能剖析的方法，请参考阅读Profiling Go Programs【博客】
+更过的关于性能剖析的方法，请参考阅读[[https://blog.golang.org/profiling-go-programs][Profiling Go Programs]]【博客】
 
 * Example函数
 
