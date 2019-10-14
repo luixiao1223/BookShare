@@ -326,7 +326,7 @@ go的安全保护机制分为动态和静态检查两部分。
 ** 更多
 
 1. 当然也可以把go的东西编译为静态库或者动态库，供C调用。
-2. cgo的内容非常多，更多参考[[https://golang.org/cmd/cgo.][cgo]]
+2. cgo的内容非常多，更多参考[[https://golang.org/cmd/cgo][cgo]]
 3. cap是容量的，和len的不同在于。len是长度，是现有data的长度。cap是最多可以容纳的极限。
 
 * Another Word of Caution
