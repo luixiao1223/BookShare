@@ -1,0 +1,335 @@
+#+TITLE: 低级编程接口
+
+go的安全保护机制分为动态和静态检查两部分。
+
+1. 静态如类型检查
+2. 动态如数组越界
+
+另外在go中无法获得goroutine所在的实际线程id，因为go会在不同的时候调度不同的线程给goroutine去运行。也不能获取指针对应的内存地址。因为在不同的时候资源回收之后，动态内存管理可能挪动数据位置，实际指针地址会发生变动。
+
+* unsafe package
+
+** 为什么要使用这些低级的编程接口
+
+1. 效率
+2. 和其它语言库交互
+3. 实现不能由纯go语言实现的函数
+
+** unsafe package 
+
+1. 是由编译器实现的。
+2. 暴露了go的内存结构。
+
+* unsafe.Sizeof, Alignof, and Offsetof
+
+** Sizeof
+
+1. Sizeof只报告数据结构里面的固定部分大小。比如字符串的指针和长度。而字符串具体占用了多大空间则不会报告。
+2. Sizeof报告的大小，最小是里面固定字段的大小总和。会多余是因为字节对齐。
+
+
+#+DOWNLOADED: /var/folders/0d/0t0_5l6x3qb7zsxvhhlc8f2c0000gn/T/screenshot.png @ 2019-10-14 08:49:08
+[[file:unsafe.Sizeof,_Alignof,_and_Offsetof/screenshot_2019-10-14_08-49-08.png]]
+
+3. 编译器不一定按照你定义字节的顺序来分配内存或对齐。目前的编译器还不会帮你调整更好的顺序。
+   #+DOWNLOADED: /var/folders/0d/0t0_5l6x3qb7zsxvhhlc8f2c0000gn/T/screenshot.png @ 2019-10-14 08:51:47
+   [[file:unsafe.Sizeof,_Alignof,_and_Offsetof/screenshot_2019-10-14_08-51-47.png]]
+
+** Alignof
+参数需要的对齐字节数
+
+** Offsetof
+
+参数的偏移地址
+
+** 总结
+
+我们来看一个具体的例子。
+
+#+BEGIN_SRC go
+  var x struct {
+    a bool
+    b int16
+    c []int
+  }
+#+END_SRC
+
+它的内存结构图
+
+
+#+DOWNLOADED: /var/folders/0d/0t0_5l6x3qb7zsxvhhlc8f2c0000gn/T/screenshot.png @ 2019-10-14 09:06:01
+[[file:unsafe.Sizeof,_Alignof,_and_Offsetof/screenshot_2019-10-14_09-06-01.png]]
+
+
+调用三个函数的结果
+
+#+BEGIN_SRC go
+  //Typical 32-bit platform:
+  Sizeof(x)   = 16  Alignof(x)   = 4
+  Sizeof(x.a) = 1   Alignof(x.a) = 1  Offsetof(x.a) = 0
+  Sizeof(x.b) = 2   Alignof(x.b) = 2  Offsetof(x.b) = 2
+  Sizeof(x.c) = 12  Alignof(x.c) = 4  Offsetof(x.c) = 4
+  //Typical 64-bit platform:
+  Sizeof(x)   = 32  Alignof(x)   = 8
+  Sizeof(x.a) = 1   Alignof(x.a) = 1  Offsetof(x.a) = 0
+  Sizeof(x.b) = 2   Alignof(x.b) = 2  Offsetof(x.b) = 2
+  Sizeof(x.c) = 24  Alignof(x.c) = 8  Offsetof(x.c) = 8
+#+END_SRC
+
+* Pointer
+1. 常规指针如 * T,可以转换为unsafe.Pointer,但是反之则不一定合法。因为你可能讲一个uint16转给一个uint64.这是不合法的。
+
+#+BEGIN_SRC go
+  //通过把浮点64位转为uint64.来看浮点的内存结构
+  package math
+  func Float64bits(f float64) uint64 { return *(*uint64)(unsafe.Pointer(&f)) }
+  fmt.Printf("%#016x\n", Float64bits(1.0)) // "0x3ff0000000000000"
+#+END_SRC
+
+2. unsafe.Pointer 也可以转换为 uintptr.
+
+   + 这个uintptr只是一个数字，指向一个内存地址，这是危险的。因为go的资源回收，可能会移动变量那么 uintptr指向的位置可能变成一个非法位置。unsafe.Pointer 却不是这样的，go的内存管理会位置 unsafe.Pointer始终指向正确的位置。
+   + 有的uintptr值，对应的是不合法的内存值。
+
+   正确代码
+   #+BEGIN_SRC go
+     gopl.io/ch13/unsafeptr
+     var x struct {
+       a bool
+       b int16
+       c []int }
+     // equivalent to pb := &x.b
+     pb := (*int16)(unsafe.Pointer(
+       uintptr(unsafe.Pointer(&x)) + unsafe.Offsetof(x.b)))
+     ,*pb = 42
+     fmt.Println(x.b) // "42"
+   #+END_SRC
+
+   错误代码
+
+   #+BEGIN_SRC go
+     // NOTE: subtly incorrect!
+     tmp := uintptr(unsafe.Pointer(&x)) + unsafe.Offsetof(x.b)
+     pb := (*int16)(unsafe.Pointer(tmp))
+     ,*pb = 42
+   #+END_SRC
+   
+   #+BEGIN_SRC go
+     //错误
+     pT := uintptr(unsafe.Pointer(new(T))) // NOTE: w
+     // 资源回收了但是pT还指向一个错误的位置
+   #+END_SRC
+   
+3. call 外部库的时候。应该立即将uintptr转换为unsafe.Pointer
+
+   #+BEGIN_SRC go
+     package reflect
+     func (Value) Pointer() uintptr
+     func (Value) UnsafeAddr() uintptr
+     func (Value) InterfaceData() [2]uintptr // (index 1)
+   #+END_SRC
+
+4. goroutine的stack会增长，所以会发生移动。所以内存地址是会变动的。
+
+* Example:Deep Equivalence
+
+在reflect模块中，有一个deep equivalence.他可以深度比较两个对象的是否相同。对于nil和空的字典比较是不等。比如
+
+#+BEGIN_SRC go
+  var a, b []string = nil, []string{}
+  fmt.Println(reflect.DeepEqual(a, b)) // "false"
+  var c, d map[string]int = nil, make(map[string]int)
+  fmt.Println(reflect.DeepEqual(c, d)) // "false"
+#+END_SRC
+
+我们来自己实现一个deep equal 但稍微不同的是上面的比较我们得出相等
+
+#+BEGIN_SRC go
+  // Package equal provides a deep equivalence relation for arbitrary values.
+  package equal
+
+  import (
+    "reflect"
+    "unsafe"
+  )
+
+  //!+
+  func equal(x, y reflect.Value, seen map[comparison]bool) bool {
+    if !x.IsValid() || !y.IsValid() {
+      return x.IsValid() == y.IsValid()
+    }
+    if x.Type() != y.Type() {
+      return false
+    }
+
+    // ...cycle check omitted (shown later)...
+
+    //!-
+    //!+cyclecheck
+    // cycle check
+    if x.CanAddr() && y.CanAddr() {
+      xptr := unsafe.Pointer(x.UnsafeAddr())
+      yptr := unsafe.Pointer(y.UnsafeAddr())
+      if xptr == yptr {
+        return true // identical references
+      }
+      c := comparison{xptr, yptr, x.Type()}
+      if seen[c] {
+        return true // already seen
+      }
+      seen[c] = true
+    }
+    //!-cyclecheck
+    //!+
+    switch x.Kind() {
+    case reflect.Bool:
+      return x.Bool() == y.Bool()
+
+    case reflect.String:
+      return x.String() == y.String()
+
+    // ...numeric cases omitted for brevity...
+
+    //!-
+    case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
+      reflect.Int64:
+      return x.Int() == y.Int()
+
+    case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32,
+      reflect.Uint64, reflect.Uintptr:
+      return x.Uint() == y.Uint()
+
+    case reflect.Float32, reflect.Float64:
+      return x.Float() == y.Float()
+
+    case reflect.Complex64, reflect.Complex128:
+      return x.Complex() == y.Complex()
+    //!+
+    case reflect.Chan, reflect.UnsafePointer, reflect.Func:
+      return x.Pointer() == y.Pointer()
+
+    case reflect.Ptr, reflect.Interface:
+      return equal(x.Elem(), y.Elem(), seen)
+
+    case reflect.Array, reflect.Slice:
+      if x.Len() != y.Len() {
+        return false
+      }
+      for i := 0; i < x.Len(); i++ {
+        if !equal(x.Index(i), y.Index(i), seen) {
+          return false
+        }
+      }
+      return true
+
+    // ...struct and map cases omitted for brevity...
+    //!-
+    case reflect.Struct:
+      for i, n := 0, x.NumField(); i < n; i++ {
+        if !equal(x.Field(i), y.Field(i), seen) {
+          return false
+        }
+      }
+      return true
+
+    case reflect.Map:
+      if x.Len() != y.Len() {
+        return false
+      }
+      for _, k := range x.MapKeys() {
+        if !equal(x.MapIndex(k), y.MapIndex(k), seen) {
+          return false
+        }
+      }
+      return true
+      //!+
+    }
+    panic("unreachable")
+  }
+
+  //!-
+
+  //!+comparison
+  // Equal reports whether x and y are deeply equal.
+  //!-comparison
+  //
+  // Map keys are always compared with ==, not deeply.
+  // (This matters for keys containing pointers or interfaces.)
+  //!+comparison
+  func Equal(x, y interface{}) bool {
+    seen := make(map[comparison]bool)
+    return equal(reflect.ValueOf(x), reflect.ValueOf(y), seen)
+  }
+
+  type comparison struct {
+    x, y unsafe.Pointer
+    t    reflect.Type
+  }
+
+  //!-comparison
+
+#+END_SRC
+
+* Calling C Code with cgo
+有两个包可以用来处理调用不同代码的一个是cgo，一个是SWIG（更复杂）
+
+** 调用C
+
+1. 如果简单，可以考虑用go实现
+2. 如果不太复杂，可以考虑用子进程的方法调用
+3. 复杂，和灵活的调用使用cgo
+
+** import C
+
+1. C不是一个包，而是一个预处理命令。运行在编译之前。
+
+#+BEGIN_SRC go
+  // Package bzip provides a writer that uses bzip2 compression (bzip.org).
+  package bzip
+  /*
+       #cgo CFLAGS: -I/usr/include
+       #cgo LDFLAGS: -L/usr/lib -lbz2
+       #include <bzlib.h>
+       int bz2compress(bz_stream *s, int action,
+                       char *in, unsigned *inlen, char *out, unsigned *outlen);
+   ,*/
+  import "C"
+
+  import ( "io"
+    "unsafe" )
+  type writer struct {
+    w      io.Writer // underlying output stream
+    stream *C.bz_stream
+    outbuf [64 * 1024]byte
+  }
+  // NewWriter returns a writer for bzip2-compressed streams.
+  func NewWriter(out io.Writer) io.WriteCloser {
+    const (
+      blockSize  = 9
+      verbosity = 0
+      workFactor = 30
+    )
+    w := &writer{w: out, stream: new(C.bz_stream)}
+    C.BZ2_bzCompressInit(w.stream, blockSize, verbosity, workFactor)
+    return w
+  }
+
+#+END_SRC
+
+*** 工作原理
+
+1. cgo会生成一个临时的包
+2. cgo会调用C编译器去编译处理
+3. 最后这些可用的部分会放到C中。调用者只要调用这个C就可以了。
+4. 可以是用#cgo，在注释中引入编译选项。
+
+** 更多
+
+1. 当然也可以把go的东西编译为静态库或者动态库，供C调用。
+2. cgo的内容非常多，更多参考[[https://golang.org/cmd/cgo.][cgo]]
+3. cap是容量的，和len的不同在于。len是长度，是现有data的长度。cap是最多可以容纳的极限。
+
+* Another Word of Caution
+
+unsafe模块比reflect模块更不建议使用。使用的时候要更为慎重
+
