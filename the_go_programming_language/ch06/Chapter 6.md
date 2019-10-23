@@ -238,7 +238,7 @@ type ColoredPoint struct {
 }
 ```
 
-- 內嵌可以使我们在定义 ColoredPoint 时得到一种句法上的简写形式
+- 内嵌可以使我们在定义 ColoredPoint 时得到一种句法上的简写形式
 
 ```
 var cp ColoredPoint
