@@ -31,10 +31,6 @@
 \setlength{\parskip}{6pt plus 2pt minus 1pt}
 }
 \usepackage{hyperref}
-\hypersetup{
-            pdftitle={},
-            pdfborder={0 0 0},
-            breaklinks=true}
 \urlstyle{same}  % don't use monospace font for urls
 \usepackage{color}
 \usepackage{fancyvrb}
@@ -95,12 +91,72 @@
 
 \geometry{left=2.0cm,right=2.0cm,top=2.0cm,bottom=2.0cm}
 
-\title{Go语言程序设计简化版}
-\date{}
+\date{\today}
 
 \begin{document}
 \begin{CJK}{UTF8}{gbsn}
-\maketitle
+
+\begin{titlepage} % Suppresses headers and footers on the title page
+
+	\centering % Centre everything on the title page
+	
+	\scshape % Use small caps for all text on the title page
+	
+	\vspace*{\baselineskip} % White space at the top of the page
+	
+	%------------------------------------------------
+	%	Title
+	%------------------------------------------------
+	
+	\rule{\textwidth}{1.6pt}\vspace*{-\baselineskip}\vspace*{2pt} % Thick horizontal rule
+	\rule{\textwidth}{0.4pt} % Thin horizontal rule
+	
+	\vspace{0.75\baselineskip} % Whitespace above the title
+	
+	{\LARGE Go语言程序设计笔记} % Title
+	
+	\vspace{0.75\baselineskip} % Whitespace below the title
+	
+	\rule{\textwidth}{0.4pt}\vspace*{-\baselineskip}\vspace{3.2pt} % Thin horizontal rule
+	\rule{\textwidth}{1.6pt} % Thick horizontal rule
+	
+	\vspace{2\baselineskip} % Whitespace after the title block
+	
+	%------------------------------------------------
+	%	Subtitle
+	%------------------------------------------------
+	
+	读书笔记分享
+	
+	\vspace*{3\baselineskip} % Whitespace under the subtitle
+	
+	%------------------------------------------------
+	%	Editor(s)
+	%------------------------------------------------
+	
+	Edited By
+	
+	\vspace{0.5\baselineskip} % Whitespace before the editors
+  	
+	{\scshape\Large rythmE \\ TonyHuiHUI \\ Sevenpin \\ luixiao1223 \\} % Editor list
+	
+	\vspace{0.5\baselineskip} % Whitespace below the editor list
+	
+	\textit{读书笔记} % Editor affiliation
+	
+	\vfill % Whitespace between editor names and publisher logo
+	
+	%------------------------------------------------
+	%	Publisher
+	%------------------------------------------------
+	
+	\vspace{0.3\baselineskip} % Whitespace under the publisher logo
+	
+	2019 % Publication year
+	
+	{\large e-book} % Publisher
+
+\end{titlepage}
 
 \chapter[1-2]{ch01-ch02}
 
