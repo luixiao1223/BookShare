@@ -1,0 +1,1310 @@
+\hypertarget{goroutine-1}{%
+\section{goroutine}\label{goroutine-1}}
+
+\begin{enumerate}
+\tightlist
+\item
+  goroutine和线程之间再数量上有很大的区别 fixme （9.8节）
+\item
+  main函数其实就是一个goroutine，我们把它称作主goroutine.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{f()}
+\KeywordTok{go}\NormalTok{ f()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+#include <iostream>
+// 必须的头文件
+#include <pthread.h>
+
+using namespace std;
+
+#define NUM_THREADS 5
+
+// 线程的运行函数
+void* say_hello(void* args)
+{
+    cout << "Hello Runoob！" << endl;
+    return 0;
+}
+
+int main()
+{
+    // 定义线程的 id 变量，多个变量使用数组
+    pthread_t tids[NUM_THREADS];
+    for(int i = 0; i < NUM_THREADS; ++i)
+    {
+        //参数依次是：创建的线程id，线程参数，调用的函数，传入的函数参数
+        int ret = pthread_create(&tids[i], NULL, say_hello, NULL);
+        if (ret != 0)
+        {
+            cout << "pthread_create error: error_code=" << ret << endl;
+        }
+    }
+    //等各个线程退出后，进程才结束，否则进程强制结束了，线程可能还没反应过来；
+    pthread_exit(NULL);
+}
+\end{verbatim}
+
+我们先来看看一个具体的例子
+
+\begin{Shaded}
+\begin{Highlighting}[]
+ \KeywordTok{func}\NormalTok{ main() \{}
+  \KeywordTok{go}\NormalTok{ spinner(}\DecValTok{100}\NormalTok{ * time.Millisecond)}
+  \KeywordTok{const}\NormalTok{ n = }\DecValTok{45}
+\NormalTok{  fibN := fib(n) }\CommentTok{// slow}
+\NormalTok{  fmt.Printf(}\StringTok{"}\CharTok{\textbackslash{}r}\StringTok{Fibonacci(%d) = %d}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, n, fibN)}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ spinner(delay time.Duration) \{}
+  \KeywordTok{for}\NormalTok{ \{}
+    \KeywordTok{for}\NormalTok{ _, r := }\KeywordTok{range} \StringTok{`-\textbackslash{}|/`}\NormalTok{ \{}
+\NormalTok{      fmt.Printf(}\StringTok{"}\CharTok{\textbackslash{}r}\StringTok{%c"}\NormalTok{, r)}
+\NormalTok{      time.Sleep(delay)}
+\NormalTok{    \}}
+\NormalTok{  \}}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ fib(x }\DataTypeTok{int}\NormalTok{) }\DataTypeTok{int}\NormalTok{ \{}
+  \KeywordTok{if}\NormalTok{ x < }\DecValTok{2}\NormalTok{ \{}
+    \KeywordTok{return}\NormalTok{ x}
+\NormalTok{  \}}
+  \KeywordTok{return}\NormalTok{ fib(x}\DecValTok{-1}\NormalTok{) + fib(x}\DecValTok{-2}\NormalTok{)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux6ce8ux610f}{%
+\subsection{注意}\label{ux6ce8ux610f}}
+
+\begin{enumerate}
+\tightlist
+\item
+  main 函数退出的时候，所有goroutine全部暴力退出
+\item
+  没有程序化的方法让一个goroutine来终止另一个goroutine
+\end{enumerate}
+
+\hypertarget{ux5e76ux53d1ux65f6ux949fux670dux52a1ux5668}{%
+\section{并发时钟服务器}\label{ux5e76ux53d1ux65f6ux949fux670dux52a1ux5668}}
+
+\hypertarget{clock1}{%
+\subsection{clock1}\label{clock1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ main() \{}
+\NormalTok{  listener, err := net.Listen(}\StringTok{"tcp"}\NormalTok{, }\StringTok{"localhost:8000"}\NormalTok{)}
+  \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{    log.Fatal(err)}
+\NormalTok{  \}}
+  \KeywordTok{for}\NormalTok{ \{}
+\NormalTok{    conn, err := listener.Accept()}
+    \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{      log.Print(err) }\CommentTok{// e.g., connection aborted}
+      \KeywordTok{continue}
+\NormalTok{    \}}
+\NormalTok{    handleConn(conn) }\CommentTok{// handle one connection at a time}
+\NormalTok{  \}}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ handleConn(c net.Conn) \{}
+  \KeywordTok{defer}\NormalTok{ c.Close()}
+  \KeywordTok{for}\NormalTok{ \{}
+\NormalTok{    _, err := io.WriteString(c, time.Now().Format(}\StringTok{"15:04:05}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{))}
+    \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+      \KeywordTok{return} \CommentTok{// e.g., client disconnected}
+\NormalTok{    \}}
+\NormalTok{    time.Sleep(}\DecValTok{1}\NormalTok{ * time.Second)}
+\NormalTok{  \}}
+\NormalTok{\}}
+\CommentTok{//!-}
+\end{Highlighting}
+\end{Shaded}
+
+当服务器打开后，可以使用
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{nc}\NormalTok{ localhost 8000}
+\end{Highlighting}
+\end{Shaded}
+
+连接，但是只能允许1个客户端连接。
+
+\hypertarget{netcat1}{%
+\subsection{netcat1}\label{netcat1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ main() \{}
+\NormalTok{  conn, err := net.Dial(}\StringTok{"tcp"}\NormalTok{, }\StringTok{"localhost:8000"}\NormalTok{)}
+  \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{    log.Fatal(err)}
+\NormalTok{  \}}
+  \KeywordTok{defer}\NormalTok{ conn.Close()}
+\NormalTok{  mustCopy(os.Stdout, conn)}
+\NormalTok{\}}
+\KeywordTok{func}\NormalTok{ mustCopy(dst io.Writer, src io.Reader) \{}
+  \KeywordTok{if}\NormalTok{ _, err := io.Copy(dst, src); err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{    log.Fatal(err)}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{clock2}{%
+\subsection{clock2}\label{clock2}}
+
+可以接受多个客户端连接
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ handleConn(c net.Conn) \{}
+  \KeywordTok{defer}\NormalTok{ c.Close()}
+  \KeywordTok{for}\NormalTok{ \{}
+\NormalTok{    _, err := io.WriteString(c, time.Now().Format(}\StringTok{"15:04:05}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{))}
+    \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+      \KeywordTok{return} \CommentTok{// e.g., client disconnected}
+\NormalTok{    \}}
+\NormalTok{    time.Sleep(}\DecValTok{1}\NormalTok{ * time.Second)}
+\NormalTok{  \}}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ main() \{}
+\NormalTok{  listener, err := net.Listen(}\StringTok{"tcp"}\NormalTok{, }\StringTok{"localhost:8000"}\NormalTok{)}
+  \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{    log.Fatal(err)}
+\NormalTok{  \}}
+  \CommentTok{//!+}
+  \KeywordTok{for}\NormalTok{ \{}
+\NormalTok{    conn, err := listener.Accept()}
+    \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{      log.Print(err) }\CommentTok{// e.g., connection aborted}
+      \KeywordTok{continue}
+\NormalTok{    \}}
+    \KeywordTok{go}\NormalTok{ handleConn(conn) }\CommentTok{// handle connections concurrently}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux5e76ux53d1ux56deux58f0ux670dux52a1ux5668}{%
+\section{并发回声服务器}\label{ux5e76ux53d1ux56deux58f0ux670dux52a1ux5668}}
+
+\hypertarget{reverb1}{%
+\subsection{reverb1}\label{reverb1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ echo(c net.Conn, shout }\DataTypeTok{string}\NormalTok{, delay time.Duration) \{}
+\NormalTok{  fmt.Fprintln(c, }\StringTok{"}\CharTok{\textbackslash{}t}\StringTok{"}\NormalTok{, strings.ToUpper(shout))}
+\NormalTok{  time.Sleep(delay)}
+\NormalTok{  fmt.Fprintln(c, }\StringTok{"}\CharTok{\textbackslash{}t}\StringTok{"}\NormalTok{, shout)}
+\NormalTok{  time.Sleep(delay)}
+\NormalTok{  fmt.Fprintln(c, }\StringTok{"}\CharTok{\textbackslash{}t}\StringTok{"}\NormalTok{, strings.ToLower(shout))}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ handleConn(c net.Conn) \{}
+\NormalTok{  input := bufio.NewScanner(c)}
+  \KeywordTok{for}\NormalTok{ input.Scan() \{}
+\NormalTok{    echo(c, input.Text(), }\DecValTok{1}\NormalTok{*time.Second)}
+\NormalTok{  \}}
+  \CommentTok{// }\AlertTok{NOTE}\CommentTok{: ignoring potential errors from input.Err()}
+\NormalTok{  c.Close()}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ main() \{}
+\NormalTok{  l, err := net.Listen(}\StringTok{"tcp"}\NormalTok{, }\StringTok{"localhost:8000"}\NormalTok{)}
+  \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{    log.Fatal(err)}
+\NormalTok{  \}}
+  \KeywordTok{for}\NormalTok{ \{}
+\NormalTok{    conn, err := l.Accept()}
+    \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{      log.Print(err) }\CommentTok{// e.g., connection aborted}
+      \KeywordTok{continue}
+\NormalTok{    \}}
+    \KeywordTok{go}\NormalTok{ handleConn(conn)}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+注意所有的返回是按顺序的，
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{some}
+    \ExtensionTok{SOME}
+\ExtensionTok{GOOD}
+    \ExtensionTok{some}
+    \ExtensionTok{some}
+    \ExtensionTok{GOOD}
+    \ExtensionTok{good}
+    \ExtensionTok{good}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{reverb2}{%
+\subsection{reverb2}\label{reverb2}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ echo(c net.Conn, shout }\DataTypeTok{string}\NormalTok{, delay time.Duration) \{}
+\NormalTok{  fmt.Fprintln(c, }\StringTok{"}\CharTok{\textbackslash{}t}\StringTok{"}\NormalTok{, strings.ToUpper(shout))}
+\NormalTok{  time.Sleep(delay)}
+\NormalTok{  fmt.Fprintln(c, }\StringTok{"}\CharTok{\textbackslash{}t}\StringTok{"}\NormalTok{, shout)}
+\NormalTok{  time.Sleep(delay)}
+\NormalTok{  fmt.Fprintln(c, }\StringTok{"}\CharTok{\textbackslash{}t}\StringTok{"}\NormalTok{, strings.ToLower(shout))}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ handleConn(c net.Conn) \{}
+\NormalTok{  input := bufio.NewScanner(c)}
+  \KeywordTok{for}\NormalTok{ input.Scan() \{}
+    \KeywordTok{go}\NormalTok{ echo(c, input.Text(), }\DecValTok{1}\NormalTok{*time.Second)}
+\NormalTok{  \}}
+  \CommentTok{// }\AlertTok{NOTE}\CommentTok{: ignoring potential errors from input.Err()}
+\NormalTok{  c.Close()}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ main() \{}
+\NormalTok{  l, err := net.Listen(}\StringTok{"tcp"}\NormalTok{, }\StringTok{"localhost:8000"}\NormalTok{)}
+  \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{    log.Fatal(err)}
+\NormalTok{  \}}
+  \KeywordTok{for}\NormalTok{ \{}
+\NormalTok{    conn, err := l.Accept()}
+    \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{      log.Print(err) }\CommentTok{// e.g., connection aborted}
+      \KeywordTok{continue}
+\NormalTok{    \}}
+    \KeywordTok{go}\NormalTok{ handleConn(conn)}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+返回是乱序的，因为并发返回
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{some}
+   \ExtensionTok{SOME}
+\ExtensionTok{good}
+   \ExtensionTok{GOOD}
+   \ExtensionTok{some}
+   \ExtensionTok{good}
+   \ExtensionTok{some}
+   \ExtensionTok{good}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux901aux9053}{%
+\section{通道}\label{ux901aux9053}}
+
+\begin{enumerate}
+\tightlist
+\item
+  用来在 goroutine 之间进行通信用的。
+\item
+  通道是引用类型。
+\item
+  通道类型之间可以比较 \(==\), 通道的0值为nil
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ch := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{int}\NormalTok{)}
+\NormalTok{ch <- x}
+\NormalTok{x = <- ch}
+\NormalTok{<-ch}
+\BuiltInTok{close}\NormalTok{(ch)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{enumerate}
+\tightlist
+\item
+  往一个关闭的通道发送数据，将引发宕机。
+\item
+  从一个关闭的通道获取数据，会不断的获取数据。直到获取完毕所有数据。然后，之后的操作立即返回nil。
+\item
+  重复关闭一个通道也会引发宕机。
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ch = }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{int}\NormalTok{)     }\CommentTok{// 无缓冲通道}
+\NormalTok{ch = }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{int}\NormalTok{, }\DecValTok{0}\NormalTok{)  }\CommentTok{// 无缓冲通道}
+\NormalTok{ch = }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{int}\NormalTok{, }\DecValTok{1}\NormalTok{)  }\CommentTok{// 容量为1的通道}
+\NormalTok{ch = }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan}\NormalTok{ init, }\DecValTok{3}\NormalTok{) }\CommentTok{// 容量为3的通道}
+\end{Highlighting}
+\end{Shaded}
+
+无缓冲通道和容量为1的通道是不一样的两种通道。
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ch = }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{int}\NormalTok{, }\DecValTok{1}\NormalTok{)  }\CommentTok{// 容量为1的通道}
+\NormalTok{ch <- }\DecValTok{10}
+\NormalTok{fmt.Println(}\StringTok{"something"}\NormalTok{) }\CommentTok{// 在ch<-10之后立即执行}
+\CommentTok{// goroutine 1}
+\NormalTok{ch = }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{int}\NormalTok{, }\DecValTok{0}\NormalTok{)  }\CommentTok{// 容量为0的通道}
+\NormalTok{ch <- }\DecValTok{10} \CommentTok{// 阻塞住}
+\NormalTok{fmt.Println(}\StringTok{"something"}\NormalTok{) }\CommentTok{// 不会立即执行}
+
+\CommentTok{// goroutine 2}
+\NormalTok{<-ch }\CommentTok{// 当这句话被执行的时候goroutine 1中的阻塞才会被消除。}
+\CommentTok{//}
+\end{Highlighting}
+\end{Shaded}
+
+第一个向无缓冲通道里面写入或提取输出的goroutine都会阻塞，直到第二个goroutine去提出或者写入数据。不同于缓冲为1的通道。这也是为什么无缓冲通道可以用来同步两个goroutine的原因。
+
+\hypertarget{ux65e0ux7f13ux51b2ux901aux9053}{%
+\subsection{无缓冲通道}\label{ux65e0ux7f13ux51b2ux901aux9053}}
+
+\begin{enumerate}
+\tightlist
+\item
+  无缓冲通道也叫做同步通道。
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ main() \{}
+\NormalTok{  conn, err := net.Dial(}\StringTok{"tcp"}\NormalTok{, }\StringTok{"localhost:8000"}\NormalTok{)}
+  \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{    log.Fatal(err)}
+\NormalTok{  \}}
+\NormalTok{  done := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \KeywordTok{struct}\NormalTok{\{\})}
+  \KeywordTok{go} \KeywordTok{func}\NormalTok{() \{}
+\NormalTok{    io.Copy(os.Stdout, conn) }\CommentTok{// }\AlertTok{NOTE}\CommentTok{: ignoring errors}
+\NormalTok{    log.Println(}\StringTok{"done"}\NormalTok{)}
+\NormalTok{    done <- }\KeywordTok{struct}\NormalTok{\{\}\{\} }\CommentTok{// signal the main goroutine}
+\NormalTok{  \}()}
+\NormalTok{  mustCopy(conn, os.Stdin)}\CommentTok{//注意主程序只执行到这一步，就卡住了。因为要读取键盘输入。}
+\NormalTok{  conn.Close()}
+\NormalTok{  <-done }\CommentTok{// wait for background goroutine to finish}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ mustCopy(dst io.Writer, src io.Reader) \{}
+  \KeywordTok{if}\NormalTok{ _, err := io.Copy(dst, src); err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{    log.Fatal(err)}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+等待计算结果
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{package}\NormalTok{ main}
+\KeywordTok{import}\NormalTok{ (}
+  \StringTok{"fmt"}
+  \StringTok{"time"}
+\NormalTok{)}
+\KeywordTok{func}\NormalTok{ main() \{}
+\NormalTok{  result := }\DecValTok{0}
+\NormalTok{  done := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \KeywordTok{struct}\NormalTok{\{\})}
+  \KeywordTok{go} \KeywordTok{func}\NormalTok{() \{}
+    \KeywordTok{for}\NormalTok{ i := }\DecValTok{1}\NormalTok{; i < }\DecValTok{10}\NormalTok{; i++ \{}
+\NormalTok{      result = i + result}
+\NormalTok{      time.Sleep(}\DecValTok{1000}\NormalTok{ * time.Millisecond)}
+\NormalTok{      fmt.Println(}\StringTok{"....."}\NormalTok{)}
+\NormalTok{    \}}
+\NormalTok{    done <- }\KeywordTok{struct}\NormalTok{\{\}\{\}}
+\NormalTok{  \}()}
+\NormalTok{  <-done}
+\NormalTok{  fmt.Println(result)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux7ba1ux9053}{%
+\subsection{管道}\label{ux7ba1ux9053}}
+
+\hypertarget{pipeline1}{%
+\subsubsection{pipeline1}\label{pipeline1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ main() \{}
+\NormalTok{  naturals := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{int}\NormalTok{)}
+\NormalTok{  squares := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{int}\NormalTok{)}
+
+  \CommentTok{// Counter}
+  \KeywordTok{go} \KeywordTok{func}\NormalTok{() \{}
+    \KeywordTok{for}\NormalTok{ x := }\DecValTok{0}\NormalTok{; ; x++ \{}
+\NormalTok{      naturals <- x}
+\NormalTok{    \}}
+\NormalTok{  \}()}
+
+  \CommentTok{// Squarer}
+  \KeywordTok{go} \KeywordTok{func}\NormalTok{() \{}
+    \KeywordTok{for}\NormalTok{ \{}
+\NormalTok{      x := <-naturals}
+\NormalTok{      squares <- x * x}
+\NormalTok{    \}}
+\NormalTok{  \}()}
+
+  \CommentTok{// Printer (in main goroutine)}
+  \KeywordTok{for}\NormalTok{ \{}
+\NormalTok{    fmt.Println(<-squares)}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{pipeline2}{%
+\subsubsection{pipeline2}\label{pipeline2}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ main() \{}
+\NormalTok{  naturals := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{int}\NormalTok{)}
+\NormalTok{  squares := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{int}\NormalTok{)}
+
+  \CommentTok{// Counter}
+  \KeywordTok{go} \KeywordTok{func}\NormalTok{() \{}
+    \KeywordTok{for}\NormalTok{ x := }\DecValTok{0}\NormalTok{; x < }\DecValTok{100}\NormalTok{; x++ \{}
+\NormalTok{      naturals <- x}
+\NormalTok{    \}}
+    \BuiltInTok{close}\NormalTok{(naturals)}
+\NormalTok{  \}()}
+
+  \CommentTok{// Squarer}
+  \KeywordTok{go} \KeywordTok{func}\NormalTok{() \{}
+    \KeywordTok{for}\NormalTok{ x := }\KeywordTok{range}\NormalTok{ naturals \{}
+\NormalTok{      squares <- x * x}
+\NormalTok{    \}}
+    \BuiltInTok{close}\NormalTok{(squares)}
+\NormalTok{  \}()}
+
+  \CommentTok{// Printer (in main goroutine)}
+  \KeywordTok{for}\NormalTok{ x := }\KeywordTok{range}\NormalTok{ squares \{}
+\NormalTok{    fmt.Println(x)}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{enumerate}
+\tightlist
+\item
+  关闭每一个通道不是必须的。
+\item
+  通道的关闭是通过是否可以访问来确定是否资源回收。而不是是否关闭
+\end{enumerate}
+
+\hypertarget{ux5355ux5411ux901aux9053ux7c7bux578b}{%
+\subsection{单向通道类型}\label{ux5355ux5411ux901aux9053ux7c7bux578b}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ counter(out }\KeywordTok{chan}\NormalTok{<- }\DataTypeTok{int}\NormalTok{) \{}
+  \KeywordTok{for}\NormalTok{ x := }\DecValTok{0}\NormalTok{; x < }\DecValTok{100}\NormalTok{; x++ \{}
+\NormalTok{    out <- x}
+\NormalTok{  \}}
+  \BuiltInTok{close}\NormalTok{(out)}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ squarer(out }\KeywordTok{chan}\NormalTok{<- }\DataTypeTok{int}\NormalTok{, in <-}\KeywordTok{chan} \DataTypeTok{int}\NormalTok{) \{}
+  \KeywordTok{for}\NormalTok{ v := }\KeywordTok{range}\NormalTok{ in \{}
+\NormalTok{    out <- v * v}
+\NormalTok{  \}}
+  \BuiltInTok{close}\NormalTok{(out)}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ printer(in <-}\KeywordTok{chan} \DataTypeTok{int}\NormalTok{) \{}
+  \KeywordTok{for}\NormalTok{ v := }\KeywordTok{range}\NormalTok{ in \{}
+\NormalTok{    fmt.Println(v)}
+\NormalTok{  \}}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ main() \{}
+\NormalTok{  naturals := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{int}\NormalTok{)}
+\NormalTok{  squares := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{int}\NormalTok{)}
+
+  \KeywordTok{go}\NormalTok{ counter(naturals)}
+  \KeywordTok{go}\NormalTok{ squarer(squares, naturals)}
+\NormalTok{  printer(squares)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux7f13ux51b2ux901aux9053}{%
+\subsection{缓冲通道}\label{ux7f13ux51b2ux901aux9053}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ch := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{string}\NormalTok{, }\DecValTok{3}\NormalTok{)}
+\NormalTok{fmt.Println(}\BuiltInTok{cap}\NormalTok{(ch)) }\CommentTok{// 3}
+\NormalTok{fmt.Println(}\BuiltInTok{len}\NormalTok{(ch)) }\CommentTok{// 2 当前有多少个元素在里面}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{enumerate}
+\tightlist
+\item
+  注意不能把管道当做队列来用。因为使用队列来用稍有不甚，会导致程序卡住。
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ mirroredQuery() }\DataTypeTok{string}\NormalTok{ \{}
+\NormalTok{  responses := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{string}\NormalTok{, }\DecValTok{3}\NormalTok{)}
+  \KeywordTok{go} \KeywordTok{func}\NormalTok{() \{responses <- request(}\StringTok{"asia.gopl.io"}\NormalTok{)\} ()}
+  \KeywordTok{go} \KeywordTok{func}\NormalTok{() \{responses <- request(}\StringTok{"europe.gopl.io"}\NormalTok{)\} ()}
+  \KeywordTok{go} \KeywordTok{func}\NormalTok{() \{responses <- request(}\StringTok{"americas.gopl.io"}\NormalTok{)\} ()}
+  \KeywordTok{return}\NormalTok{ <-responses}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ request(hostname }\DataTypeTok{string}\NormalTok{) (response }\DataTypeTok{string}\NormalTok{) \{}\CommentTok{/* ... */}\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{enumerate}
+\tightlist
+\item
+  如果采用无缓冲的chan，那么慢的两个goroutine就会卡住。不会被释放掉，因为这两个goroutine阻塞住了，无法运行。
+\item
+  具体是怎么泄露的？ fix
+\end{enumerate}
+
+\hypertarget{ux5e76ux884cux5faaux73af}{%
+\section{并行循环}\label{ux5e76ux884cux5faaux73af}}
+
+无并行程序写法
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ makeThumbnails(filenames []}\DataTypeTok{string}\NormalTok{) \{}
+  \KeywordTok{for}\NormalTok{ _, f := }\KeywordTok{range}\NormalTok{ filenames \{}
+    \KeywordTok{if}\NormalTok{ _, err := thumbnail.ImageFile(f); err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{      log.Println(err)}
+\NormalTok{    \}}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+并行写法
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ makeThumbnails(filenames []}\DataTypeTok{string}\NormalTok{) \{}
+  \KeywordTok{for}\NormalTok{ _, f := }\KeywordTok{range}\NormalTok{ filenames \{}
+    \KeywordTok{go}\NormalTok{ thumbnail.ImageFile(f) }\CommentTok{// 这个地方存在问题，程序又错误！！！}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+上面的程序有两个地方存在问题。
+
+\begin{enumerate}
+\tightlist
+\item
+  f的问题
+\item
+  程序运行之后瞬间推出。并没有任何函数再等待goroutine运行完毕。
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ makeThumbnails(filenames []}\DataTypeTok{string}\NormalTok{)\{}
+\NormalTok{  ch := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \KeywordTok{struct}\NormalTok{\{\})}
+  \KeywordTok{for}\NormalTok{ _, f : }\KeywordTok{range}\NormalTok{ filenames \{}
+    \KeywordTok{go} \KeywordTok{func}\NormalTok{(f }\DataTypeTok{string}\NormalTok{) \{}
+\NormalTok{      thumbnail.ImageFile(f)}
+\NormalTok{      ch <-}\KeywordTok{struct}\NormalTok{\{\}\{\}}
+\NormalTok{    \}(f)}
+\NormalTok{  \}}
+
+  \KeywordTok{for} \KeywordTok{range}\NormalTok{ filenames \{}
+\NormalTok{    <-ch}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+处理返回值
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ makeThumbnails(filenames []}\DataTypeTok{string}\NormalTok{) }\DataTypeTok{error}\NormalTok{\{}
+\NormalTok{  errors := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{error}\NormalTok{)}
+  \KeywordTok{for}\NormalTok{ _, f := }\KeywordTok{range}\NormalTok{ filenames \{}
+\NormalTok{    _, err := thumbnail.ImageFile(f)}
+\NormalTok{    errors <- err}
+\NormalTok{  \}(f)}
+
+  \KeywordTok{for} \KeywordTok{range}\NormalTok{ filenames \{}
+    \KeywordTok{if}\NormalTok{ err := <-errors; err != }\OtherTok{nil}\NormalTok{ \{}
+      \KeywordTok{return}\NormalTok{ err }\CommentTok{// 这里不正确，goroutine泄露危险}
+\NormalTok{    \}}
+\NormalTok{  \}}
+
+  \KeywordTok{return} \OtherTok{nil}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+Q:为什么会造成goroutine协奏，goroutine泄露的原理是什么？
+
+解决方案，是开辟一个和filenames一样长的通道。
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ makeThumbnails5(filenames []}\DataTypeTok{string}\NormalTok{) (thumbfiles []}\DataTypeTok{string}\NormalTok{, err }\DataTypeTok{error}\NormalTok{) \{}
+  \KeywordTok{type}\NormalTok{ item }\KeywordTok{struct}\NormalTok{ \{}
+\NormalTok{    thumbfile }\DataTypeTok{string}
+\NormalTok{    err       }\DataTypeTok{error}
+\NormalTok{  \}}
+\NormalTok{  ch := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan}\NormalTok{ item, }\BuiltInTok{len}\NormalTok{(filenames))}
+  \KeywordTok{for}\NormalTok{ _, f := }\KeywordTok{range}\NormalTok{ filenames \{}
+    \KeywordTok{go} \KeywordTok{func}\NormalTok{(f }\DataTypeTok{string}\NormalTok{) \{}
+      \KeywordTok{var}\NormalTok{ it item}
+\NormalTok{      it.thumbfile, it.err = thumbnail.ImageFile(f)}
+\NormalTok{      ch <- it}
+\NormalTok{      \}(f)}
+\NormalTok{  \}}
+  \KeywordTok{for} \KeywordTok{range}\NormalTok{ filenames \{}
+\NormalTok{    it := <-ch}
+    \KeywordTok{if}\NormalTok{ it.err != }\OtherTok{nil}\NormalTok{ \{}
+      \KeywordTok{return} \OtherTok{nil}\NormalTok{, it.err}
+\NormalTok{    \}}
+\NormalTok{    thumbfiles = }\BuiltInTok{append}\NormalTok{(thumbfiles, it.thumbfile)}
+\NormalTok{  \}}
+  \KeywordTok{return}\NormalTok{ thumbfiles, }\OtherTok{nil}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+一个更好的解决方案
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ makeThumbnails6(filenames <-}\KeywordTok{chan} \DataTypeTok{string}\NormalTok{) }\DataTypeTok{int64}\NormalTok{ \{}
+\NormalTok{  sizes := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{int64}\NormalTok{)}
+  \KeywordTok{var}\NormalTok{ wg sync.WaitGroup }\CommentTok{// number of working goroutines}
+  \KeywordTok{for}\NormalTok{ f := }\KeywordTok{range}\NormalTok{ filenames \{}
+\NormalTok{    wg.Add(}\DecValTok{1}\NormalTok{)}
+    \CommentTok{// worker}
+    \KeywordTok{go} \KeywordTok{func}\NormalTok{(f }\DataTypeTok{string}\NormalTok{) \{}
+      \KeywordTok{defer}\NormalTok{ wg.Done()}
+\NormalTok{      thumb, err := thumbnail.ImageFile(f)}
+      \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{        log.Println(err)}
+        \KeywordTok{return}\NormalTok{ \}}
+\NormalTok{      info, _ := os.Stat(thumb) }\CommentTok{// OK to ignore error}
+\NormalTok{      sizes <- info.Size()}
+\NormalTok{    \}(f)}
+\NormalTok{  \}}
+  \CommentTok{// closer}
+  \KeywordTok{go} \KeywordTok{func}\NormalTok{() \{}
+\NormalTok{    wg.Wait()}
+    \BuiltInTok{close}\NormalTok{(sizes)}
+\NormalTok{  \}()}
+  \KeywordTok{var}\NormalTok{ total }\DataTypeTok{int64}
+  \KeywordTok{for}\NormalTok{ size := }\KeywordTok{range}\NormalTok{ sizes \{}
+\NormalTok{    total += size}
+\NormalTok{  \}}
+  \KeywordTok{return}\NormalTok{ total}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux5e76ux53d1ux7684webux722cux866b}{%
+\section{并发的Web爬虫}\label{ux5e76ux53d1ux7684webux722cux866b}}
+
+\hypertarget{ux7b2cux4e00ux7248}{%
+\subsection{第一版}\label{ux7b2cux4e00ux7248}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ crawl(url }\DataTypeTok{string}\NormalTok{) []}\DataTypeTok{string}\NormalTok{ \{}
+\NormalTok{  fmt.Println(url)}
+\NormalTok{  list, err := links.Extract(url)}
+  \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{    log.Print(err)}
+\NormalTok{  \}}
+  \KeywordTok{return}\NormalTok{ list}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ main() \{}
+\NormalTok{  worklist := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan}\NormalTok{ []}\DataTypeTok{string}\NormalTok{)}
+  \CommentTok{// Start with the command-line arguments.}
+  \KeywordTok{go} \KeywordTok{func}\NormalTok{() \{ worklist <- os.Args[}\DecValTok{1}\NormalTok{:] \}()}
+  \CommentTok{// Crawl the web concurrently.}
+\NormalTok{  seen := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{map}\NormalTok{[}\DataTypeTok{string}\NormalTok{]}\DataTypeTok{bool}\NormalTok{)}
+  \KeywordTok{for}\NormalTok{ list := }\KeywordTok{range}\NormalTok{ worklist \{ }\CommentTok{// 注意，不会结束的原因在这里。因为阻塞住了。当worklist中的内容为空时。阻塞住。}
+    \KeywordTok{for}\NormalTok{ _, link := }\KeywordTok{range}\NormalTok{ list \{}
+      \KeywordTok{if}\NormalTok{ !seen[link] \{}
+\NormalTok{        seen[link] = }\OtherTok{true}
+        \KeywordTok{go} \KeywordTok{func}\NormalTok{(link }\DataTypeTok{string}\NormalTok{)\{}
+\NormalTok{          worklist <- crawl(link)}
+\NormalTok{        \}(link)}
+\NormalTok{      \}}
+\NormalTok{    \}}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+问题：
+
+\begin{enumerate}
+\tightlist
+\item
+  打开太多的链接。并发度太高，导致文件描述符不够用
+\item
+  程序并没有终止。
+\end{enumerate}
+
+\hypertarget{ux89e3ux51b3ux94feux63a5ux592aux591aux95eeux9898}{%
+\subsection{解决链接太多问题}\label{ux89e3ux51b3ux94feux63a5ux592aux591aux95eeux9898}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{var}\NormalTok{ tokens = }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \KeywordTok{struct}\NormalTok{\{\}, }\DecValTok{20}\NormalTok{)}
+\KeywordTok{func}\NormalTok{ crawl(url }\DataTypeTok{string}\NormalTok{) []}\DataTypeTok{string}\NormalTok{ \{}
+\NormalTok{  fmt.Println(url)}
+\NormalTok{  tokens <- }\KeywordTok{struct}\NormalTok{\{\}\{\} }\CommentTok{// acquire a token}
+\NormalTok{  list, err := links.Extract(url) }\CommentTok{// 最多只有20个go线程在获取url对应的所有链接。}
+\NormalTok{  <-tokens }\CommentTok{// release the token}
+  \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{    log.Print(err)}
+\NormalTok{  \}}
+  \KeywordTok{return}\NormalTok{ list}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux89e3ux51b3ux7ec8ux6b62ux95eeux9898}{%
+\subsection{解决终止问题}\label{ux89e3ux51b3ux7ec8ux6b62ux95eeux9898}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ main() \{}
+\NormalTok{  worklist := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan}\NormalTok{ []}\DataTypeTok{string}\NormalTok{)}
+  \KeywordTok{var}\NormalTok{ n }\DataTypeTok{int} \CommentTok{// number of pending sends to worklist}
+  \CommentTok{// Start with the command-line arguments.}
+\NormalTok{  n++}
+  \KeywordTok{go} \KeywordTok{func}\NormalTok{() \{ worklist <- os.Args[}\DecValTok{1}\NormalTok{:] \}()}
+  \CommentTok{// Crawl the web concurrently.}
+\NormalTok{  seen := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{map}\NormalTok{[}\DataTypeTok{string}\NormalTok{]}\DataTypeTok{bool}\NormalTok{)}
+  \KeywordTok{for}\NormalTok{ ; n > }\DecValTok{0}\NormalTok{; n-- \{}
+\NormalTok{    list := <-worklist}
+    \KeywordTok{for}\NormalTok{ _, link := }\KeywordTok{range}\NormalTok{ list \{}
+      \KeywordTok{if}\NormalTok{ !seen[link] \{}
+\NormalTok{        seen[link] = }\OtherTok{true}
+\NormalTok{        n++}
+        \KeywordTok{go} \KeywordTok{func}\NormalTok{(link }\DataTypeTok{string}\NormalTok{) \{}
+\NormalTok{          worklist <- crawl(link)}
+\NormalTok{        \}(link)}
+\NormalTok{      \}}
+\NormalTok{    \}}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux4e00ux4e2aux66ffux4ee3ux65b9ux6848}{%
+\subsection{一个替代方案}\label{ux4e00ux4e2aux66ffux4ee3ux65b9ux6848}}
+
+\textbf{解决连接数过多, 没有解决终止问题？}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ main() \{}
+\NormalTok{  worklist := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan}\NormalTok{ []}\DataTypeTok{string}\NormalTok{)  }\CommentTok{// lists of URLs, may have duplicates}
+\NormalTok{  unseenLinks := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{string}\NormalTok{) }\CommentTok{// de-duplicated URLs}
+  \CommentTok{// Add command-line arguments to worklist.}
+  \KeywordTok{go} \KeywordTok{func}\NormalTok{() \{ worklist <- os.Args[}\DecValTok{1}\NormalTok{:] \}()}
+  \CommentTok{// Create 20 crawler goroutines to fetch each unseen link.}
+  \KeywordTok{for}\NormalTok{ i := }\DecValTok{0}\NormalTok{; i < }\DecValTok{20}\NormalTok{; i++ \{}
+    \KeywordTok{go} \KeywordTok{func}\NormalTok{() \{}
+      \KeywordTok{for}\NormalTok{ link := }\KeywordTok{range}\NormalTok{ unseenLinks \{}
+\NormalTok{        foundLinks := crawl(link)}
+        \KeywordTok{go} \KeywordTok{func}\NormalTok{() \{ worklist <- foundLinks \}()}
+\NormalTok{      \}}
+\NormalTok{    \}() }
+\NormalTok{  \}}
+  \CommentTok{// The main goroutine de-duplicates worklist items}
+  \CommentTok{// and sends the unseen ones to the crawlers.}
+\NormalTok{  seen := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{map}\NormalTok{[}\DataTypeTok{string}\NormalTok{]}\DataTypeTok{bool}\NormalTok{)}
+  \KeywordTok{for}\NormalTok{ list := }\KeywordTok{range}\NormalTok{ worklist \{}
+    \KeywordTok{for}\NormalTok{ _, link := }\KeywordTok{range}\NormalTok{ list \{}
+      \KeywordTok{if}\NormalTok{ !seen[link] \{}
+\NormalTok{        seen[link] = }\OtherTok{true}
+\NormalTok{        unseenLinks <- link}
+\NormalTok{      \}}
+\NormalTok{    \}}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux591aux8defselect}{%
+\section{多路select}\label{ux591aux8defselect}}
+
+\hypertarget{ux5012ux8ba1ux65f6ux7a0bux5e8f}{%
+\subsection{倒计时程序}\label{ux5012ux8ba1ux65f6ux7a0bux5e8f}}
+
+倒计时发射程序
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ main() \{}
+\NormalTok{  fmt.Println(}\StringTok{"Commencing countdown."}\NormalTok{)}
+\NormalTok{  tick := time.Tick(}\DecValTok{1}\NormalTok{ * time.Second)}
+  \KeywordTok{for}\NormalTok{ countdown := }\DecValTok{10}\NormalTok{; countdown > }\DecValTok{0}\NormalTok{; countdown-- \{}
+\NormalTok{    fmt.Println(countdown)}
+\NormalTok{    <-tick}
+\NormalTok{  \}}
+\NormalTok{  launch()}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+取消发射程序
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{abort := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \KeywordTok{struct}\NormalTok{\{\})}
+\KeywordTok{go} \KeywordTok{func}\NormalTok{() \{}
+\NormalTok{  os.Stdin.Read(}\BuiltInTok{make}\NormalTok{([]}\DataTypeTok{byte}\NormalTok{, }\DecValTok{1}\NormalTok{)) }\CommentTok{// read a single byte}
+\NormalTok{  abort <- }\KeywordTok{struct}\NormalTok{\{\}\{\}}
+\NormalTok{\}()}
+\end{Highlighting}
+\end{Shaded}
+
+如何同时接收并处理tick和abort消息？select
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{select}\NormalTok{ \{}
+     \KeywordTok{case}\NormalTok{ <-ch1:}
+         \CommentTok{// ...}
+     \KeywordTok{case}\NormalTok{ x := <-ch2:}
+         \CommentTok{// ...use x...}
+     \KeywordTok{case}\NormalTok{ ch3 <- y:}
+         \CommentTok{// ...}
+     \KeywordTok{default}\NormalTok{:}
+  \CommentTok{// ...}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+最终实现
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ main() \{}
+  \CommentTok{// ...create abort channel...}
+\NormalTok{  fmt.Println(}\StringTok{"Commencing countdown.  Press return to abort."}\NormalTok{)}
+  \KeywordTok{select}\NormalTok{ \{}
+  \KeywordTok{case}\NormalTok{ <-time.After(}\DecValTok{10}\NormalTok{ * time.Second):}
+    \CommentTok{// Do nothing.}
+  \KeywordTok{case}\NormalTok{ <-abort:}
+\NormalTok{    fmt.Println(}\StringTok{"Launch aborted!"}\NormalTok{)}
+    \KeywordTok{return} 
+\NormalTok{    \}}
+\NormalTok{  launch()}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux6ce8ux610fux4e8bux9879}{%
+\subsection{注意事项}\label{ux6ce8ux610fux4e8bux9879}}
+
+\hypertarget{ux591aux4e2a-chan-ux540cux65f6ux6709ux6570ux636eux7684ux65f6ux5019ux600eux4e48ux529e}{%
+\subsubsection{多个 chan
+同时有数据的时候怎么办？}\label{ux591aux4e2a-chan-ux540cux65f6ux6709ux6570ux636eux7684ux65f6ux5019ux600eux4e48ux529e}}
+
+随机选择一个执行
+
+\hypertarget{goroutineux6cc4ux9732}{%
+\subsubsection{goroutine泄露}\label{goroutineux6cc4ux9732}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ main() \{}
+  \CommentTok{// ...create abort channel...}
+\NormalTok{  fmt.Println(}\StringTok{"Commencing countdown.  Press return to abort."}\NormalTok{)}
+\NormalTok{  tick := time.Tick(}\DecValTok{1}\NormalTok{ * time.Second)}\CommentTok{// 行为类似创建一个goroutine不断的向tick发送事件}
+  \KeywordTok{for}\NormalTok{ countdown := }\DecValTok{10}\NormalTok{; countdown > }\DecValTok{0}\NormalTok{; countdown-- \{}
+\NormalTok{    fmt.Println(countdown)}
+    \KeywordTok{select}\NormalTok{ \{}
+    \KeywordTok{case}\NormalTok{ <-tick:}
+      \CommentTok{// Do nothing.}
+    \KeywordTok{case}\NormalTok{ <-abort:}
+\NormalTok{      fmt.Println(}\StringTok{"Launch aborted!"}\NormalTok{)}
+      \KeywordTok{return} \CommentTok{// 返回之后，tick没有对象去取事件，但是却有一个goroutine再不断的发事件给tick.所以goroutine泄露}
+\NormalTok{    \}}
+\NormalTok{  \}}
+\NormalTok{  launch()}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+记得关闭它
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ticker := time.NewTicker(}\DecValTok{1}\NormalTok{ * time.Second)}
+\NormalTok{<-ticker.C }\CommentTok{// receive from the ticker's channel}
+\NormalTok{ticker.Stop() }\CommentTok{// cause the ticker's goroutine to terminate (}\AlertTok{FIXME}\CommentTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux975eux963bux585eux4fe1ux9053}{%
+\subsubsection{非阻塞信道}\label{ux975eux963bux585eux4fe1ux9053}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{select}\NormalTok{ \{}
+\KeywordTok{case}\NormalTok{ <-abort:}
+\NormalTok{  fmt.Printf(}\StringTok{"Launch aborted!}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+  \KeywordTok{return}
+\KeywordTok{default}\NormalTok{:}
+  \CommentTok{// do nothing}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{nil-chan}{%
+\subsubsection{nil chan}\label{nil-chan}}
+
+往nil chan发送或者接受数据都是永久阻塞。
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{nil}\NormalTok{ <- }\StringTok{"some"} \CommentTok{// 发送}
+\NormalTok{<- }\OtherTok{nil}        \CommentTok{// 接受}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux5e76ux53d1ux76eeux5f55ux904dux5386}{%
+\section{并发目录遍历}\label{ux5e76ux53d1ux76eeux5f55ux904dux5386}}
+
+\hypertarget{ux7b2cux4e00ux7248-1}{%
+\subsection{第一版}\label{ux7b2cux4e00ux7248-1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{// walkDir recursively walks the file tree rooted at dir}
+\CommentTok{// and sends the size of each found file on fileSizes.}
+\KeywordTok{func}\NormalTok{ walkDir(dir }\DataTypeTok{string}\NormalTok{, fileSizes }\KeywordTok{chan}\NormalTok{<- }\DataTypeTok{int64}\NormalTok{) \{}
+  \KeywordTok{for}\NormalTok{ _, entry := }\KeywordTok{range}\NormalTok{ dirents(dir) \{}
+    \KeywordTok{if}\NormalTok{ entry.IsDir() \{}
+\NormalTok{      subdir := filepath.Join(dir, entry.Name())}
+\NormalTok{      walkDir(subdir, fileSizes)}
+\NormalTok{    \}}\KeywordTok{else}\NormalTok{ \{}
+\NormalTok{      fileSizes <- entry.Size()}
+\NormalTok{    \}}
+\NormalTok{  \}}
+\NormalTok{\}}
+\CommentTok{// dirents returns the entries of directory dir.}
+\KeywordTok{func}\NormalTok{ dirents(dir }\DataTypeTok{string}\NormalTok{) []os.FileInfo \{}
+\NormalTok{  entries, err := ioutil.ReadDir(dir)}
+  \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{    fmt.Fprintf(os.Stderr, }\StringTok{"du1: %v}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, err)}
+    \KeywordTok{return} \OtherTok{nil}
+\NormalTok{  \}}
+  \KeywordTok{return}\NormalTok{ entries}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ main() \{}
+  \CommentTok{// Determine the initial directories.}
+\NormalTok{  flag.Parse()}
+\NormalTok{  roots := flag.Args()}
+  \KeywordTok{if} \BuiltInTok{len}\NormalTok{(roots) == }\DecValTok{0}\NormalTok{ \{}
+\NormalTok{    roots = []}\DataTypeTok{string}\NormalTok{\{}\StringTok{"."}\NormalTok{\}}
+\NormalTok{  \}}
+  \CommentTok{// Traverse the file tree.}
+\NormalTok{  fileSizes := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{int64}\NormalTok{)}
+  \KeywordTok{go} \KeywordTok{func}\NormalTok{() \{}
+    \KeywordTok{for}\NormalTok{ _, root := }\KeywordTok{range}\NormalTok{ roots \{}
+\NormalTok{      walkDir(root, fileSizes)}
+\NormalTok{    \}}
+    \BuiltInTok{close}\NormalTok{(fileSizes)}
+\NormalTok{  \}()}
+  \CommentTok{// Print the results.}
+  \KeywordTok{var}\NormalTok{ nfiles, nbytes }\DataTypeTok{int64}
+  \KeywordTok{for}\NormalTok{ size := }\KeywordTok{range}\NormalTok{ fileSizes \{}
+\NormalTok{    nfiles++}
+\NormalTok{    nbytes += size}
+\NormalTok{  \}}
+\NormalTok{  printDiskUsage(nfiles, nbytes)}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ printDiskUsage(nfiles, nbytes }\DataTypeTok{int64}\NormalTok{) \{}
+\NormalTok{  fmt.Printf(}\StringTok{"%d files  %.1f GB}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, nfiles, }\DataTypeTok{float64}\NormalTok{(nbytes)/}\FloatTok{1e9}\NormalTok{)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux6539ux8fdbux7248}{%
+\subsection{改进版}\label{ux6539ux8fdbux7248}}
+
+\hypertarget{ux6bcfux9694ux4e00ux6bb5ux65f6ux95f4ux8f93ux51faux4fe1ux606f}{%
+\subsubsection{每隔一段时间输出信息}\label{ux6bcfux9694ux4e00ux6bb5ux65f6ux95f4ux8f93ux51faux4fe1ux606f}}
+
+参数v控制是否输出filesize，每隔一段时间输出
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{var}\NormalTok{ verbose = flag.Bool(}\StringTok{"v"}\NormalTok{, }\OtherTok{false}\NormalTok{, }\StringTok{"show verbose progress messages"}\NormalTok{)}
+\KeywordTok{func}\NormalTok{ main() \{}
+  \CommentTok{// ...start background goroutine...}
+  \CommentTok{// Print the results periodically.}
+  \KeywordTok{var}\NormalTok{ tick <-}\KeywordTok{chan}\NormalTok{ time.Time}
+  \KeywordTok{if}\NormalTok{ *verbose \{}
+\NormalTok{    tick = time.Tick(}\DecValTok{500}\NormalTok{ * time.Millisecond)}
+\NormalTok{  \}}
+  \KeywordTok{var}\NormalTok{ nfiles, nbytes }\DataTypeTok{int64}
+\NormalTok{loop:}
+  \KeywordTok{for}\NormalTok{ \{}
+    \KeywordTok{select}\NormalTok{ \{}
+    \KeywordTok{case}\NormalTok{ size, ok := <-fileSizes:}
+      \KeywordTok{if}\NormalTok{ !ok \{}
+        \KeywordTok{break}\NormalTok{ loop }\CommentTok{// fileSizes was closed}
+\NormalTok{      \}}
+\NormalTok{      nfiles++}
+\NormalTok{      nbytes += size}
+    \KeywordTok{case}\NormalTok{ <-tick: }\CommentTok{// 有么有goroutine泄露？}
+\NormalTok{      printDiskUsage(nfiles, nbytes)}
+\NormalTok{    \}}
+\NormalTok{  \}}
+\NormalTok{  printDiskUsage(nfiles, nbytes) }\CommentTok{// final totals}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux5145ux5206ux5229ux7528ux597dux5e76ux53d1}{%
+\subsubsection{充分利用好并发}\label{ux5145ux5206ux5229ux7528ux597dux5e76ux53d1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ main() \{}
+  \CommentTok{// ...determine roots...}
+  \CommentTok{// Traverse each root of the file tree in parallel.}
+\NormalTok{  fileSizes := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{int64}\NormalTok{)}
+  \KeywordTok{var}\NormalTok{ n sync.WaitGroup}
+  \KeywordTok{for}\NormalTok{ _, root := }\KeywordTok{range}\NormalTok{ roots \{}
+\NormalTok{    n.Add(}\DecValTok{1}\NormalTok{)}
+    \KeywordTok{go}\NormalTok{ walkDir(root, &n, fileSizes)}
+\NormalTok{  \}}
+  \KeywordTok{go} \KeywordTok{func}\NormalTok{() \{}
+\NormalTok{    n.Wait()}
+    \BuiltInTok{close}\NormalTok{(fileSizes)}
+\NormalTok{  \}()}
+  \CommentTok{// ...select loop... 上一个例子的信息输出循环}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ walkDir(dir }\DataTypeTok{string}\NormalTok{, n *sync.WaitGroup, fileSizes }\KeywordTok{chan}\NormalTok{<- }\DataTypeTok{int64}\NormalTok{) \{}
+  \KeywordTok{defer}\NormalTok{ n.Done()}
+  \KeywordTok{for}\NormalTok{ _, entry := }\KeywordTok{range}\NormalTok{ dirents(dir) \{}
+    \KeywordTok{if}\NormalTok{ entry.IsDir() \{}
+\NormalTok{      n.Add(}\DecValTok{1}\NormalTok{)}
+\NormalTok{      subdir := filepath.Join(dir, entry.Name())}
+      \KeywordTok{go}\NormalTok{ walkDir(subdir, n, fileSizes)}
+\NormalTok{    \} }\KeywordTok{else}\NormalTok{ \{}
+\NormalTok{      fileSizes <- entry.Size()}
+\NormalTok{    \}}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux9650ux5236ux4e0aux4e00ux4e2aux4f8bux5b50ux7684ux5e76ux53d1ux91cf}{%
+\subsubsection{限制上一个例子的并发量}\label{ux9650ux5236ux4e0aux4e00ux4e2aux4f8bux5b50ux7684ux5e76ux53d1ux91cf}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{// sema is a counting semaphore for limiting concurrency in dirents.}
+\KeywordTok{var}\NormalTok{ sema = }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \KeywordTok{struct}\NormalTok{\{\}, }\DecValTok{20}\NormalTok{)}
+\CommentTok{// dirents returns the entries of directory dir.}
+\KeywordTok{func}\NormalTok{ dirents(dir }\DataTypeTok{string}\NormalTok{) []os.FileInfo \{}
+\NormalTok{  sema <- }\KeywordTok{struct}\NormalTok{\{\}\{\}        }\CommentTok{// acquire token}
+  \KeywordTok{defer} \KeywordTok{func}\NormalTok{() \{ <-sema \}() }\CommentTok{// release token}
+  \CommentTok{// ...}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux53d6ux6d88}{%
+\section{取消}\label{ux53d6ux6d88}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{var}\NormalTok{ done = }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \KeywordTok{struct}\NormalTok{\{\})}
+\KeywordTok{func}\NormalTok{ cancelled() }\DataTypeTok{bool}\NormalTok{ \{}
+  \KeywordTok{select}\NormalTok{ \{}
+  \KeywordTok{case}\NormalTok{ <-done:}
+    \KeywordTok{return} \OtherTok{true}
+  \KeywordTok{default}\NormalTok{:}
+    \KeywordTok{return} \OtherTok{false}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{// Cancel traversal when input is detected.}
+\KeywordTok{go} \KeywordTok{func}\NormalTok{() \{}
+\NormalTok{  os.Stdin.Read(}\BuiltInTok{make}\NormalTok{([]}\DataTypeTok{byte}\NormalTok{, }\DecValTok{1}\NormalTok{)) }\CommentTok{// read a single byte}
+  \BuiltInTok{close}\NormalTok{(done)}
+\NormalTok{\}()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{for}\NormalTok{ \{}
+  \KeywordTok{select}\NormalTok{ \{}
+  \KeywordTok{case}\NormalTok{ <-done: }\CommentTok{// 为什么多个地方有这个语句？ 因为在一个关闭的通道上取东西，直接返回}
+    \CommentTok{// Drain fileSizes to allow existing goroutines to finish.}
+    \KeywordTok{for} \KeywordTok{range}\NormalTok{ fileSizes \{}
+      \CommentTok{// Do nothing.}
+\NormalTok{    \}}
+    \KeywordTok{return}
+  \KeywordTok{case}\NormalTok{ size, ok := <-fileSizes:}
+    \CommentTok{// ...}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+goroutine各自分别退出自己。
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ walkDir(dir }\DataTypeTok{string}\NormalTok{, n *sync.WaitGroup, fileSizes }\KeywordTok{chan}\NormalTok{<- }\DataTypeTok{int64}\NormalTok{) \{}
+  \KeywordTok{defer}\NormalTok{ n.Done()}
+  \KeywordTok{if}\NormalTok{ cancelled() \{}
+    \KeywordTok{return}
+\NormalTok{  \}}
+  \KeywordTok{for}\NormalTok{ _, entry := }\KeywordTok{range}\NormalTok{ dirents(dir) \{}
+    \CommentTok{// ...}
+\NormalTok{  \}}
+\NormalTok{\}}
+\KeywordTok{func}\NormalTok{ dirents(dir }\DataTypeTok{string}\NormalTok{) []os.FileInfo \{}
+  \KeywordTok{select}\NormalTok{ \{}
+  \KeywordTok{case}\NormalTok{ sema <- }\KeywordTok{struct}\NormalTok{\{\}\{\}: }\CommentTok{// acquire token}
+  \KeywordTok{case}\NormalTok{ <-done:}
+    \KeywordTok{return} \OtherTok{nil} \CommentTok{// cancelled}
+\NormalTok{  \}}
+  \KeywordTok{defer} \KeywordTok{func}\NormalTok{() \{ <-sema \}() }\CommentTok{// release token}
+  \CommentTok{// ...read directory...}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux91cdux8981ux7684ux6d4bux8bd5ux6280ux5de7}{%
+\subsection{重要的测试技巧}\label{ux91cdux8981ux7684ux6d4bux8bd5ux6280ux5de7}}
+
+Q :
+其实，你自己是很难判断是否把所有的goroutine都关闭并推出了。那么如何在main函数返回的时候，确定还有没有goroutine再运行呢？
+
+A :
+在main函数退出之前，调用一个panic，看运行时堆栈信息。如果信息只有main函数的堆栈则说明所有goroutine都退出了。否则，就是说有的goroutine没有退出。
+
+\hypertarget{ux804aux5929ux670dux52a1ux5668}{%
+\section{聊天服务器}\label{ux804aux5929ux670dux52a1ux5668}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ main() \{}
+\NormalTok{  listener, err := net.Listen(}\StringTok{"tcp"}\NormalTok{, }\StringTok{"localhost:8000"}\NormalTok{)}
+  \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{    log.Fatal(err)}
+\NormalTok{  \}}
+  \KeywordTok{go}\NormalTok{ broadcaster() }\CommentTok{// 广播消息}
+  \KeywordTok{for}\NormalTok{ \{}
+\NormalTok{    conn, err := listener.Accept()}
+    \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{      log.Print(err)}
+      \KeywordTok{continue} 
+\NormalTok{    \}}
+    \KeywordTok{go}\NormalTok{ handleConn(conn) }\CommentTok{// 管理客户端发来的连接}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{type}\NormalTok{ client }\KeywordTok{chan}\NormalTok{<- }\DataTypeTok{string} \CommentTok{// an outgoing message channel}
+\KeywordTok{var}\NormalTok{ (}
+\NormalTok{  entering = }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan}\NormalTok{ client) }\CommentTok{// 这个entering chan 将输入输出什么？ 应该是chan<- string}
+\NormalTok{  leaving  = }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan}\NormalTok{ client)}
+\NormalTok{  messages = }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{string}\NormalTok{) }\CommentTok{// all incoming client messages}
+\NormalTok{)}
+\KeywordTok{func}\NormalTok{ broadcaster() \{}
+\NormalTok{  clients := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{map}\NormalTok{[client]}\DataTypeTok{bool}\NormalTok{) }\CommentTok{// all connected clients (chan是可hash的么？)}
+  \KeywordTok{for}\NormalTok{ \{}
+    \KeywordTok{select}\NormalTok{ \{}
+    \KeywordTok{case}\NormalTok{ msg := <-messages:}
+      \CommentTok{// Broadcast incoming message to all}
+      \CommentTok{// clients' outgoing message channels.}
+      \KeywordTok{for}\NormalTok{ cli := }\KeywordTok{range}\NormalTok{ clients \{}
+\NormalTok{        cli <- msg}
+\NormalTok{      \}}
+    \KeywordTok{case}\NormalTok{ cli := <-entering:}
+\NormalTok{      clients[cli] = }\OtherTok{true}
+    \KeywordTok{case}\NormalTok{ cli := <-leaving:}
+      \BuiltInTok{delete}\NormalTok{(clients, cli)}
+      \BuiltInTok{close}\NormalTok{(cli)}
+\NormalTok{    \}}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ handleConn(conn net.Conn) \{}
+\NormalTok{  ch := }\BuiltInTok{make}\NormalTok{(}\KeywordTok{chan} \DataTypeTok{string}\NormalTok{) }\CommentTok{// outgoing client messages}
+  \KeywordTok{go}\NormalTok{ clientWriter(conn, ch)}
+\NormalTok{  who := conn.RemoteAddr().String()}
+\NormalTok{  ch <- }\StringTok{"You are "}\NormalTok{ + who}
+\NormalTok{  messages <- who + }\StringTok{" has arrived"}
+  \CommentTok{// 把ch本身放到entering里面，不是从ch中取出string放入entering.因为entering的接收类型为chan<- string}
+\NormalTok{  entering <- ch }
+\NormalTok{  input := bufio.NewScanner(conn)}
+  \KeywordTok{for}\NormalTok{ input.Scan() \{}
+\NormalTok{    messages <- who + }\StringTok{": "}\NormalTok{ + input.Text()}
+\NormalTok{  \}}
+  \CommentTok{// }\AlertTok{NOTE}\CommentTok{: ignoring potential errors from input.Err()}
+\NormalTok{  leaving <- ch}
+\NormalTok{  messages <- who + }\StringTok{" has left"}
+\NormalTok{  conn.Close()}
+\NormalTok{\}}
+\KeywordTok{func}\NormalTok{ clientWriter(conn net.Conn, ch <-}\KeywordTok{chan} \DataTypeTok{string}\NormalTok{) \{}
+  \KeywordTok{for}\NormalTok{ msg := }\KeywordTok{range}\NormalTok{ ch \{ }\CommentTok{// 会泄露么？}
+\NormalTok{    fmt.Fprintln(conn, msg) }\CommentTok{// }\AlertTok{NOTE}\CommentTok{: ignoring network errors}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+

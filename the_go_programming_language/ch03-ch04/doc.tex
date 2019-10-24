@@ -1,0 +1,476 @@
+\hypertarget{ux7b2cux4e09ux7ae0-ux57faux672cux6570ux636eux7c7bux578b}{%
+\section{第三章
+基本数据类型}\label{ux7b2cux4e09ux7ae0-ux57faux672cux6570ux636eux7c7bux578b}}
+
+\hypertarget{ux6574ux578b}{%
+\subsection{整型}\label{ux6574ux578b}}
+
+\begin{itemize}
+\tightlist
+\item
+  如果原始的数值是有符号类型，而且最左边的bit位是1的话，那么最终结果可能是负的，例如int8的例子：
+\end{itemize}
+
+\begin{verbatim}
+var u uint8 = 255
+fmt.Println(u, u+1, u*u) // "255 0 1"
+var i int8 = 127
+fmt.Println(i, i+1, i*i) // "127 -128 1"
+\end{verbatim}
+
+\hypertarget{ux6d6eux70b9ux6570}{%
+\subsection{浮点数}\label{ux6d6eux70b9ux6570}}
+
+\begin{itemize}
+\tightlist
+\item
+  提供了两种精度的浮点数，float32和float64
+\item
+  一个float32类型的浮点数可以提供大约6个十进制数的精度，而float64则可以提供约15个十进制数的精度；通常应该优先使用float64类型
+\item
+  如果一个函数返回的浮点数结果可能失败，最好的做法是用单独的标志报告失败，像这样
+\end{itemize}
+
+\begin{verbatim}
+func compute() (value float64, ok bool) {
+    // ...
+    if failed {
+        return 0, false
+    }
+    return result, true
+}
+\end{verbatim}
+
+\hypertarget{ux590dux6570}{%
+\subsection{复数}\label{ux590dux6570}}
+
+\begin{itemize}
+\tightlist
+\item
+  提供了两种精度的复数类型：complex64和complex128
+\item
+  内置的complex函数用于构建复数，内建的real和imag函数分别返回复数的实部和虚部
+\item
+  Go
+  已经有很多科学计算的库了。作为一门泛用编程语言，提供一个方便的复数类型还是挺有必要的
+\end{itemize}
+
+\begin{verbatim}
+var x complex128 = complex(1, 2) // 1+2i
+var y complex128 = complex(3, 4) // 3+4i
+fmt.Println(x*y)                 // "(-5+10i)"
+fmt.Println(real(x*y))           // "-5"
+fmt.Println(imag(x*y))           // "10"
+\end{verbatim}
+
+\hypertarget{ux5e03ux5c14ux578b}{%
+\subsection{布尔型}\label{ux5e03ux5c14ux578b}}
+
+\begin{itemize}
+\tightlist
+\item
+  两种类型true和false
+\end{itemize}
+
+\hypertarget{ux5b57ux7b26ux4e32}{%
+\subsection{字符串}\label{ux5b57ux7b26ux4e32}}
+
+\begin{itemize}
+\tightlist
+\item
+  内置的len函数可以返回一个字符串中的字节数目（不是rune字符数目），索引操作s{[}i{]}返回第i个字节的字节值，i必须满足0
+  \textless{}= i\textless{} len(s)条件约束
+\end{itemize}
+
+\begin{verbatim}
+s := "hello, world"
+fmt.Println(len(s))     // "12"
+fmt.Println(s[0], s[7]) // "104 119" ('h' and 'w')
+// TypeOf(s[0]) --> uint8
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  如果试图访问超出字符串索引范围的字节将会导致panic异常
+\end{itemize}
+
+\begin{verbatim}
+c := s[len(s)] // panic: index out of range
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  字符串的值是不可变的：一个字符串包含的字节序列永远不会被改变，当然我们也可以给一个字符串变量分配一个新字符串值。可以像下面这样将一个字符串追加到另一个字符串
+\item
+  这并不会导致原始的字符串值被改变，但是变量s将因为+=语句持有一个新的字符串值，但是t依然是包含原先的字符串值
+\item
+  因为字符串是不可修改的，因此尝试修改字符串内部数据的操作也是被禁止的
+\end{itemize}
+
+\begin{verbatim}
+s := "left foot"
+t := s
+s += ", right foot"
+
+fmt.Println(s) // "left foot, right foot"
+fmt.Println(t) // "left foot"
+
+s[0] = 'L' // compile error: cannot assign to s[0]
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  标准库中有四个包对字符串处理尤为重要：bytes、strings、strconv和unicode包。
+\item
+  strings包提供了许多如字符串的查询、替换、比较、截断、拆分和合并等功能
+\item
+  bytes包也提供了很多类似功能的函数，但是针对和字符串有着相同结构的{[}{]}byte类型
+\item
+  strconv包提供了布尔型、整型数、浮点数和对应字符串的相互转换，还提供了双引号转义相关的转换
+\item
+  unicode包提供了IsDigit、IsLetter、IsUpper和IsLower等类似功能，它们用于给字符分类
+\item
+  path和path/filepath包提供了关于文件路径名更一般的函数操作
+\item
+  除了字符串、字符、字节之间的转换，字符串和数值之间的转换也比较常见。由strconv包提供这类转换功能
+\end{itemize}
+
+\hypertarget{ux5e38ux91cf}{%
+\subsection{常量}\label{ux5e38ux91cf}}
+
+\begin{itemize}
+\tightlist
+\item
+  常量表达式的值在编译期计算，而不是在运行期
+\item
+  每种常量的潜在类型都是基础类型：boolean、string或数字
+\item
+  一个常量的声明语句定义了常量的名字，和变量的声明语法类似，常量的值不可修改
+\item
+  如果是批量声明的常量，除了第一个外其它的常量右边的初始化表达式都可以省略，如果省略初始化表达式则表示使用前面常量的初始化表达式写法，对应的常量类型也一样的
+\end{itemize}
+
+\begin{verbatim}
+const pi = 3.14159 // approximately; math.Pi is a better approximation
+
+const (
+    a = 1
+    b
+    c = 2
+    d
+)
+
+fmt.Println(a, b, c, d) // "1 1 2 2"
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  常量声明可以使用iota常量生成器初始化，它用于生成一组以相似规则初始化的常量，但是不用每行都写一遍初始化表达式
+\item
+  周日将对应0，周一为1，如此等等
+\end{itemize}
+
+\begin{verbatim}
+type Weekday int
+
+const (
+    Sunday Weekday = iota
+    Monday
+    Tuesday
+    Wednesday
+    Thursday
+    Friday
+    Saturday
+)
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  无类型常量，通过延迟明确常量的具体类型，无类型的常量不仅可以提供更高的运算精度，而且可以直接用于更多的表达式而不需要显式的类型转换。例如，例子中的ZiB和YiB的值已经超出任何Go语言中整数类型能表达的范围，但是它们依然是合法的常量，而且像下面的常量表达式依然有效（译注：YiB/ZiB是在编译期计算出来的，并且结果常量是1024，是Go语言int变量能有效表示的）
+\item
+  另一个例子，math.Pi无类型的浮点数常量，可以直接用于任意需要浮点数或复数的地方
+\end{itemize}
+
+\begin{verbatim}
+fmt.Println(YiB/ZiB) // "1024"
+
+var x float32 = math.Pi
+var y float64 = math.Pi
+var z complex128 = math.Pi
+\end{verbatim}
+
+\hypertarget{ux7b2cux56dbux7ae0-ux590dux5408ux6570ux636eux7c7bux578b}{%
+\section{第四章
+复合数据类型}\label{ux7b2cux56dbux7ae0-ux590dux5408ux6570ux636eux7c7bux578b}}
+
+\hypertarget{ux6570ux7ec4}{%
+\subsection{数组}\label{ux6570ux7ec4}}
+
+\begin{itemize}
+\tightlist
+\item
+  数组的每个元素可以通过索引下标来访问，索引下标的范围是从0开始到数组长度减1的位置。内置的len函数将返回数组中元素的个数
+\end{itemize}
+
+\begin{verbatim}
+var a [3]int             // array of 3 integers
+fmt.Println(a[0])        // print the first element
+fmt.Println(a[len(a)-1]) // print the last element, a[2]
+
+// Print the indices and elements.
+for i, v := range a {
+    fmt.Printf("%d %d\n", i, v)
+}
+
+// Print the elements only.
+for _, v := range a {
+    fmt.Printf("%d\n", v)
+}
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{当调用一个函数的时候，函数的每个调用参数将会被赋值给函数内部的参数变量，所以函数参数变量接收的是一个复制的副本，并不是原始调用的变量}
+\item
+  当然，我们可以显式地传入一个数组指针，那样的话函数通过指针对数组的任何修改都可以直接反馈到调用者。下面的函数用于给{[}32{]}byte类型的数组清零
+\end{itemize}
+
+\begin{verbatim}
+func zero(ptr *[32]byte) {
+    for i := range ptr {
+        ptr[i] = 0
+    }
+}
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  数组依然很少用作函数参数；相反，我们一般使用slice来替代数组，因为数组依然是僵化的类型，因为数组的类型包含了僵化的长度信息。上面的zero函数并不能接收指向{[}16{]}byte类型数组的指针，而且也没有任何添加或删除数组元素的方法
+\end{itemize}
+
+\hypertarget{slice}{%
+\subsection{slice}\label{slice}}
+
+\begin{itemize}
+\tightlist
+\item
+  Slice（切片）代表变长的序列，序列中每个元素都有相同的类型。一个slice类型一般写作{[}{]}T，其中T代表slice中元素的类型；slice的语法和数组很像，只是没有固定长度而已
+\item
+  数组和slice之间有着紧密的联系。一个slice是一个轻量级的数据结构，提供了访问数组子序列（或者全部）元素的功能，而且slice的底层确实引用一个数组对象
+\end{itemize}
+
+\begin{verbatim}
+months := [...]string{1: "January", /* ... */, 12: "December"}
+
+Q2 := months[4:7]
+summer := months[6:9]
+fmt.Println(Q2)     // ["April" "May" "June"]
+fmt.Println(summer) // ["June" "July" "August"]
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  因为slice值包含指向第一个slice元素的指针，因此向函数传递slice将允许在函数内部修改底层数组的元素。换句话说，复制一个slice只是对底层的数组创建了一个新的slice别名
+\item
+  和数组不同的是，slice之间不能比较，因此我们不能使用==操作符来判断两个slice是否含有全部相等元素
+\end{itemize}
+
+\begin{verbatim}
+func equal(x, y []string) bool {
+    if len(x) != len(y) {
+        return false
+    }
+    for i := range x {
+        if x[i] != y[i] {
+            return false
+        }
+    }
+    return true
+}
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  如果你需要测试一个slice是否是空的，使用len(s) == 0来判断，而不应该用s
+  == nil来判断
+\end{itemize}
+
+\hypertarget{map}{%
+\subsection{map}\label{map}}
+
+\begin{itemize}
+\tightlist
+\item
+  是一个无序的key/value对的集合，其中所有的key都是不同的，然后通过给定的key可以在常数时间复杂度内检索、更新或删除对应的value
+\item
+  在Go语言中，一个map就是一个哈希表的引用，map类型可以写为map{[}K{]}V，其中K和V分别对应key和value。map中所有的key都有相同的类型，所有的value也有着相同的类型，但是key和value之间可以是不同的数据类型
+\item
+  Map的迭代顺序是不确定的，并且不同的哈希函数实现可能导致不同的遍历顺序
+\item
+  和slice一样，map之间也不能进行相等比较
+\end{itemize}
+
+\begin{verbatim}
+ages := make(map[string]int) // mapping from strings to ints
+
+ages := map[string]int{
+    "alice":   31,
+    "charlie": 34,
+}
+
+//和下面的定义等价
+ages := make(map[string]int)
+ages["alice"] = 31
+ages["charlie"] = 34
+
+//删除操作
+delete(ages, "alice") // remove element ages["alice"]
+
+//遍历
+for name, age := range ages {
+    fmt.Printf("%s\t%d\n", name, age)
+}
+
+//遍历判断相等
+func equal(x, y map[string]int) bool {
+    if len(x) != len(y) {
+        return false
+    }
+    for k, xv := range x {
+        if yv, ok := y[k]; !ok || yv != xv {
+            return false
+        }
+    }
+    return true
+}
+\end{verbatim}
+
+\hypertarget{ux7ed3ux6784ux4f53}{%
+\subsection{结构体}\label{ux7ed3ux6784ux4f53}}
+
+\begin{itemize}
+\tightlist
+\item
+  结构体是一种聚合的数据类型，是由零个或多个任意类型的值聚合成的实体
+\end{itemize}
+
+\begin{verbatim}
+type Employee struct {
+    ID        int
+    Name      string
+    Address   string
+    DoB       time.Time
+    Position  string
+    Salary    int
+    ManagerID int
+}
+
+var dilbert Employee
+
+//访问方式
+dilbert.Salary -= 5000 // demoted, for writing too few lines of code
+
+position := &dilbert.Position
+*position = "Senior " + *position // promoted, for outsourcing to Elbonia
+
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  如果结构体成员名字是以大写字母开头的，那么该成员就是导出的；这是Go语言导出规则决定的。一个结构体可能同时包含导出和未导出的成员
+\item
+  Go语言有一个特性让我们只声明一个成员对应的数据类型而不指名成员的名字；这类成员就叫匿名成员
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{package}\NormalTok{ main}
+
+\KeywordTok{import}\NormalTok{ (}
+    \StringTok{"fmt"}
+\NormalTok{)}
+
+\KeywordTok{type}\NormalTok{ point }\KeywordTok{struct}\NormalTok{ \{}
+\NormalTok{    X }\DataTypeTok{int64}
+\NormalTok{    Y }\DataTypeTok{int64}
+\NormalTok{\}}
+
+\KeywordTok{type}\NormalTok{ some }\KeywordTok{struct}\NormalTok{ \{}
+\NormalTok{    point}
+\NormalTok{    book }\DataTypeTok{int64}
+\NormalTok{    X    }\DataTypeTok{int64} \CommentTok{//注意不会报错}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ main() \{}
+    \KeywordTok{var}\NormalTok{ s some}
+\NormalTok{    s.X = }\DecValTok{10}
+\NormalTok{    s.Y = }\DecValTok{10}
+\NormalTok{    s.book = }\DecValTok{10}
+\NormalTok{    s.point.X = }\DecValTok{11}
+
+\NormalTok{    fmt.Println(s.X, s.point.X) }\CommentTok{// 10, 11}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{json}{%
+\subsection{JSON}\label{json}}
+
+\begin{itemize}
+\tightlist
+\item
+  JavaScript对象表示法（JSON）是一种用于发送和接收结构化信息的标准协议
+\item
+  JSON是对JavaScript中各种类型的值------字符串、数字、布尔值和对象------Unicode本文编码
+\end{itemize}
+
+\hypertarget{tag}{%
+\subsection{tag}\label{tag}}
+
+只在两个地方起作用反射和类型匹配上，其它情况没有作用。
+
+\begin{itemize}
+\tightlist
+\item
+  两个struct相等，需要具备相同的identical tags。
+\item
+  reflect可以获得tag内容。
+\end{itemize}
+
+\begin{verbatim}
+package main
+
+import (
+    "fmt"
+    "reflect"
+)
+
+func main() {
+    type S struct {
+        F string `species:"gopher" color:"blue"`
+    }
+    s := S{}
+    st := reflect.TypeOf(s)
+    field := st.Field(0)
+    fmt.Println(field.Tag.Get("color"), field.Tag.Get("species"))
+}
+\end{verbatim}
+
+\hypertarget{ux6587ux672cux548chtmlux6a21ux677f}{%
+\subsection{文本和HTML模板}\label{ux6587ux672cux548chtmlux6a21ux677f}}
+
+\begin{itemize}
+\tightlist
+\item
+  需要复杂的打印格式，这时候一般需要将格式化代码分离出来以便更安全地修改。这些功能是由text/template和html/template等模板包提供的，它们提供了一个将变量值填充到一个文本或HTML格式的模板的机制
+\end{itemize}

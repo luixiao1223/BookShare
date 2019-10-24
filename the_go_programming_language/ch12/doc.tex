@@ -1,0 +1,257 @@
+\#反射
+
+\begin{itemize}
+\tightlist
+\item
+  Go
+  语言提供了一种机制，在编译时不知道类型的情况下，可更新变量、在运行时查看值、调用方法以及直接对它们的布局进行操作，这种机制称为反射（reflection）
+\end{itemize}
+
+\hypertarget{ux4e3aux4ec0ux4e48ux4f7fux7528ux53cdux5c04}{%
+\subsection{12.1
+为什么使用反射}\label{ux4e3aux4ec0ux4e48ux4f7fux7528ux53cdux5c04}}
+
+\begin{itemize}
+\item
+  有时我们需要写一个函数有能力统一处理各种值类型的函数，而这些类型可能无法共享同一个接口，也可能布局未知，也有可能这个类型在我们设计函数时还不存在
+\item
+  例子：fmt.Printf
+  中的格式化逻辑，它可以输出任意类型的任意值，甚至是用户自定义的一个类型
+\end{itemize}
+
+\begin{verbatim}
+func Sprint(x interface{}) string {
+    type stringe interface{
+        String() string
+    }
+    switch x := x.(type) {
+    case stringer:
+        return x.String()
+    case string:
+        return x
+    case int:
+        return strconv.Itoa(x)
+    // 对 int16、uint32 等类型做类似处理
+    case bool:
+        if x{
+            return "true"
+        }
+        return "false"
+    default:
+        // arry, chan, func, map, pointer, slice, struct
+        return "???"
+    }
+}
+\end{verbatim}
+
+问题： 如何处理类似 {[}{]}float64、map{[}string{]}{[}{]}string
+的其他类型、以及自己命名的类型，比如 url.Values？ -
+当我们无法透视一个未知类型的布局、代码无法继续时时，就需要反射了
+
+\hypertarget{reflect.type-ux548c-reflect.value}{%
+\subsection{12.2 reflect.Type 和
+reflect.Value}\label{reflect.type-ux548c-reflect.value}}
+
+\begin{itemize}
+\tightlist
+\item
+  reflect 包定义了两个重要的类型：Type 和 Value
+\end{itemize}
+
+\hypertarget{reflect.type}{%
+\subsubsection{reflect.Type}\label{reflect.type}}
+
+\begin{itemize}
+\tightlist
+\item
+  reflect.TypeOf 函数接受任何的 interface\{\}
+  参数，并且把接口中的动态类型以 reflect.Type 形式返回。
+\end{itemize}
+
+\begin{verbatim}
+t := reflect.TypeOf(3)  // 一个 reflect.Type
+fmt.Println(t.String()) // "int"
+fmt.Println(t)          // "int"
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  reflect.Type 满足 fmt.Stringer, fmt.Printf 提供了一个简写方式
+  \%T，内部实现就使用了 reflect.TypeOf:
+  \texttt{fmt.Printf("\%T\textbackslash{}n,\ e)\ //\ "int"}
+\end{itemize}
+
+\hypertarget{reflect.value}{%
+\subsubsection{reflect.Value}\label{reflect.value}}
+
+\begin{itemize}
+\tightlist
+\item
+  reflect.ValueOf 函数接受任意的 interface\{\} 并将接口的动态值以
+  reflect.Value 的形式返回
+\end{itemize}
+
+\begin{verbatim}
+v := reflect.ValueOf(3)  // 一个reflect.Value
+fmt.Println(v)           // "3"
+fmt.Printf("%v\n", v)    // "3"
+fmt.Println(v. String()) // 注意："＜int Value>"
+\end{verbatim}
+
+\begin{itemize}
+\item
+  reflect.Value 也满足 fmt.Stringer, fmt包的 \%v 功能会对 reflect.Value
+  进行特殊处理
+\item
+  调用 Value 的 Type 方法会把它的类型以 reflect.Type 方式返回：
+\end{itemize}
+
+\begin{verbatim}
+t := v.Type()           // 一个reflect.Type
+fmt.Println(t.String()) // "int"
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  reflect.ValueOf 的逆操作是 reflect.Value.Interface
+  方法。它返回一个interface\{\}接口值，与 reflect.Value
+  包含同一个具体值。
+\end{itemize}
+
+\begin{verbatim}
+v := reflect.ValueOf(3) // a reflect.Value
+x := v.Interface()      // an interface{}
+i := x.(int)            // an int x.(int)是一个类型断言
+fmt.Printf("%d\n", i)   // "3"
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  格式化函数的第二次尝试
+\end{itemize}
+
+\begin{verbatim}
+package format
+
+import (
+    "reflect"
+    "strconv"
+)
+
+// Any formats any value as a string.
+func Any(value interface{}) string {
+    return formatAtom(reflect.ValueOf(value))
+}
+
+// formatAtom formats a value without inspecting its internal structure.
+func formatAtom(v reflect.Value) string {
+    switch v.Kind() {
+    case reflect.Invalid:
+        return "invalid"
+    case reflect.Int, reflect.Int8, reflect.Int16,
+        reflect.Int32, reflect.Int64:
+        return strconv.FormatInt(v.Int(), 10)
+    case reflect.Uint, reflect.Uint8, reflect.Uint16,
+        reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+        return strconv.FormatUint(v.Uint(), 10)
+    // ...floating-point and complex cases omitted for brevity...
+    case reflect.Bool:
+        return strconv.FormatBool(v.Bool())
+    case reflect.String:
+        return strconv.Quote(v.String())
+    case reflect.Chan, reflect.Func, reflect.Ptr, reflect.Slice, reflect.Map:
+        return v.Type().String() + " 0x" +
+            strconv.FormatUint(uint64(v.Pointer()), 16)
+    default: // reflect.Array, reflect.Struct, reflect.Interface
+        return v.Type().String() + " value"
+    }
+}
+\end{verbatim}
+
+该函数把每个值当做一个没有内部结构且不可分割的物体。对于聚合类型（结构体和数组）以及接口，它只输出了值的类型；对于引用类型（通道、函数、指针、slice
+和 map），它输出了类型和以十六进制表示的引用地址
+
+\begin{verbatim}
+    var x int64 = 1
+    var d time.Duration = 1 * time.Nanosecond
+    fmt.Println(format.Any(x))                  // "1"
+    fmt.Println(format.Any(d))                  // "1"
+    fmt.Println(format.Any([]int64{x}))         // "[]int64 0x8202b87b0"
+    fmt.Println(format.Any([]time.Duration{d})) // "[]time.Duration 0x8202b87e0"
+\end{verbatim}
+
+\hypertarget{ux4f7fux7528-reflect.value-ux6765ux8bbeux7f6eux503c}{%
+\subsection{12.5 使用 reflect.Value
+来设置值}\label{ux4f7fux7528-reflect.value-ux6765ux8bbeux7f6eux503c}}
+
+\begin{itemize}
+\tightlist
+\item
+  reflect.Value 分为可寻址的和不可寻址的两类
+\end{itemize}
+
+\begin{verbatim}
+x := 2                      // 值类型变量？
+a := reflect.ValueOf(2)     // 2   int   no
+b := reflect.ValueOf(x)     // 2   int   no
+c := reflect.ValueOf(&x)    // &x *int   no
+d := c.Elem()               // 2   int   yes (x)
+\end{verbatim}
+
+前三个都是保存的副本，不可寻址，所以可以通过 reflect.ValueOf(\&x).Elem()
+来获得任意变量 x 可寻址的 Value 值
+
+\begin{itemize}
+\item
+  可以通过变量的 CanAddr 方法来询问 reflect.Value 变量是否可寻址：
+  \texttt{fmt.Println(x.CanAddr())}
+\item
+  从一个可寻址的 reflect. Value() 获取变量需要三步。首先，调用
+  Addr()，返回一个Value，其中包含一个指向变量的指针，接下来，在这个
+  Value 上调用 Interface()，会返回一个包含这个指针的 Interface\{\}
+  值。最后，如果我们知道变量的类型，我们可以使用类型断言来把接口内容转换为一个普通指针。之后就可以通过这个指针来更新变量了
+\end{itemize}
+
+\begin{verbatim}
+x := 2
+d := reflect.ValueOf(&x).Elem()     // d 代表变量 x
+p := d.Addr().Interface().(*int)    // px := &x
+*px = 3                             // x = 3
+fmt.Println(x)                      // "3"
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  还可以直接通过可寻址的 reflect.Value
+  来更新变量，不用通过指针，而是直接调用reflect.Value.Set 方法：
+  \texttt{d.Set(reflect.ValueOf(4))} 以及一些特化的 Set 变种 SetInt
+  、SetUint 、SetString 、SetFloat 等： \texttt{d.SetInt(3)}
+\end{itemize}
+
+注： 1.
+平常由编译器来检查的那些可赋值性条件，在这种情况下则是在运行时由Set
+方法来检查 2. 变量和值类型需一致 3. 再不可寻址的 reflect.Value
+上调用会崩溃 4.
+反射可以读取到未导出的结构字段的值，但是不能更新它们，更新前可以用
+CanSet 方法判断
+
+\hypertarget{ux6ce8ux610fux4e8bux9879}{%
+\subsection{12.9 注意事项}\label{ux6ce8ux610fux4e8bux9879}}
+
+\hypertarget{ux614eux7528ux53cdux5c04ux7684ux4e09ux4e2aux539fux56e0}{%
+\subsubsection{慎用反射的三个原因：}\label{ux614eux7528ux53cdux5c04ux7684ux4e09ux4e2aux539fux56e0}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  基于反射的代码是很脆弱的。能导致编译器报告类型错误的每种写法，在反射中都有一个对应的误用方法。编译器在编译时就能向你报告这个错误，而反射错误则要等到执行时才以崩溃的方式来报告
+\item
+  类型其实也算是某种形式的文档，而反射的相关操作则无法做静态类型检查，所以大量使用反射的代码是很难理解的
+\item
+  基于反射的函数会比为特定类型优化的函数慢一两个数量级
+\end{enumerate}

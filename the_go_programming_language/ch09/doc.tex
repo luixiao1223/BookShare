@@ -1,0 +1,406 @@
+\hypertarget{ux4f7fux7528ux5171ux4eabux53d8ux91cfux5b9eux73b0ux5e76ux53d1}{%
+\section{9.
+使用共享变量实现并发}\label{ux4f7fux7528ux5171ux4eabux53d8ux91cfux5b9eux73b0ux5e76ux53d1}}
+
+\hypertarget{ux7adeux6001}{%
+\subsection{9.1 竞态}\label{ux7adeux6001}}
+
+\hypertarget{ux5e76ux53d1ux4e00ux4e2aux7a0bux5e8fux53eaux6709ux4e00ux4e2a-goroutine-ux65f6ux7a0bux5e8fux4e32ux884cux8fdbux884cux6709ux591aux4e2a-goroutine-ux65f6ux91ccux9762ux7684ux4e8bux4ef6ux5e76ux53d1ux8fdbux884c}{%
+\subsubsection{并发：一个程序只有一个 goroutine 时，程序串行进行；有多个
+goroutine
+时，里面的事件并发进行}\label{ux5e76ux53d1ux4e00ux4e2aux7a0bux5e8fux53eaux6709ux4e00ux4e2a-goroutine-ux65f6ux7a0bux5e8fux4e32ux884cux8fdbux884cux6709ux591aux4e2a-goroutine-ux65f6ux91ccux9762ux7684ux4e8bux4ef6ux5e76ux53d1ux8fdbux884c}}
+
+\hypertarget{ux5e76ux53d1ux5b89ux5168ux51fdux6570ux5728ux5e76ux53d1ux8c03ux7528ux65f6ux80fdux6b63ux5e38ux5de5ux4f5c}{%
+\subsubsection{并发安全：函数在并发调用时能正常工作}\label{ux5e76ux53d1ux5b89ux5168ux51fdux6570ux5728ux5e76ux53d1ux8c03ux7528ux65f6ux80fdux6b63ux5e38ux5de5ux4f5c}}
+
+\hypertarget{ux7adeux6001ux591aux4e2a-goroutine-ux6309ux67d0ux4e9bux4ea4ux9519ux987aux5e8fux6267ux884cux65f6ux7a0bux5e8fux65e0ux6cd5ux7ed9ux51faux6b63ux786eux7ed3ux679c}{%
+\subsubsection{竞态：多个 goroutine
+按某些交错顺序执行时，程序无法给出正确结果}\label{ux7adeux6001ux591aux4e2a-goroutine-ux6309ux67d0ux4e9bux4ea4ux9519ux987aux5e8fux6267ux884cux65f6ux7a0bux5e8fux65e0ux6cd5ux7ed9ux51faux6b63ux786eux7ed3ux679c}}
+
+\hypertarget{ux4e3eux4f8bux94f6ux884cux8d26ux6237}{%
+\subsubsection{举例：银行账户}\label{ux4e3eux4f8bux94f6ux884cux8d26ux6237}}
+
+\begin{verbatim}
+package bank
+var balance int
+func Deposit(amount int) { balance = balance + amount }
+func Balance() int ｛return balance }
+
+// Alice:
+go func () {
+    bank.Deposit(200) // Al
+    fmt.Println("=", bank. Balance()) // A2
+}()
+// Bob :
+go bank.Deposit(100) // B
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  程序中的这种状况是竞态中的一种，称为数据竞态（data
+  race）。数据竞态发生于两个 goroutine
+  并发读写同一个变量并且至少其中一个是写入时
+\item
+  Go 语言很少有``未定义行为''的问题
+\end{itemize}
+
+\begin{verbatim}
+var x []int
+go func() { x = make([]int, 10) }()
+go func() { x = make([]int, 1000000) }()
+x[999999) = 1 ／／注意：未定义行为，可能造成内存异常
+\end{verbatim}
+
+\hypertarget{ux907fux514dux6570ux636eux7adeux6001ux7684ux4e09ux79cdux65b9ux6cd5}{%
+\subsubsection{避免数据竞态的三种方法}\label{ux907fux514dux6570ux636eux7adeux6001ux7684ux4e09ux79cdux65b9ux6cd5}}
+
+\begin{itemize}
+\tightlist
+\item
+  不要修改变量
+\end{itemize}
+
+\begin{verbatim}
+var icons = make(map[string]image.Image)
+func loadlcon(name string) image.Image
+// 注意：并发不安全
+func Icon(name string) image.Image {
+    icon, ok := icons[name]
+    if !ok {
+        icon = loadIcon(name)
+        icons[name] = icon
+    }
+    return icon
+}
+
+var icons = map[string]image.Image{
+    "spades.png": load Icon("spades.png”),
+    "hearts.png"：load Icon （"hearts.png"）,
+    "diamonds.png": load Icon("diamonds.png"),
+    "clubs.png" : loadlcon("clubs.png”),
+}
+// 并发安全
+func Icon(name string) image.Image { return icons[name] }
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  避免从多个 goroutine 访问同一个变量
+\end{itemize}
+
+\begin{verbatim}
+// Package bank provides a concurrency-safe bank with one account.
+package bank
+
+var deposits = make(chan int) // send amount to deposit
+var balances = make(chan int) // receive balance
+
+func Deposit(amount int) { deposits <- amount }
+func Balance() int       { return <-balances }
+
+func teller() {
+    var balance int // balance 被限制在 teller goroutine 中
+    for {
+        select {
+        case amount := <-deposits:
+            balance += amount
+        case balances <- balance:
+        }
+    }
+}
+
+func init() {
+    go teller() // start the monitor goroutine
+}
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  允许多个 goroutine 访问同一个变量，但在同一时间只有一个goroutine
+  可以访问。这种方法称为互斥机制。
+\end{itemize}
+
+\hypertarget{ux4e92ux65a5ux9501sync.mutex}{%
+\subsection{9.2 互斥锁：sync.Mutex}\label{ux4e92ux65a5ux9501sync.mutex}}
+
+\hypertarget{ux4e00ux4e2aux8ba1ux6570ux4e0aux9650ux4e3a1ux7684ux4fe1ux53f7ux91cfux79f0ux4e3aux4e8cux8fdbux5236ux4fe1ux53f7ux91cf-binary-semaphore}{%
+\subsubsection{一个计数上限为1的信号量称为二进制信号量 （binary
+semaphore）}\label{ux4e00ux4e2aux8ba1ux6570ux4e0aux9650ux4e3a1ux7684ux4fe1ux53f7ux91cfux79f0ux4e3aux4e8cux8fdbux5236ux4fe1ux53f7ux91cf-binary-semaphore}}
+
+\hypertarget{sync-ux5305ux6709ux4e00ux4e2aux5355ux72ecux7684-mutex-ux7c7bux578bux6765ux652fux6301ux4e92ux65a5ux9501ux6a21ux5f0fux5b83ux7684-lock-ux65b9ux6cd5ux7528ux4e8eux83b7ux53d6ux4ee4ux724ctokenux6b64ux8fc7ux7a0bux4e5fux79f0ux4e3aux4e0aux9501unlock-ux65b9ux6cd5ux7528ux4e8eux91caux653eux4ee4ux724c}{%
+\subsubsection{sync 包有一个单独的 Mutex 类型来支持互斥锁模式。它的 Lock
+方法用于获取令牌（token，此过程也称为上锁），Unlock
+方法用于释放令牌：}\label{sync-ux5305ux6709ux4e00ux4e2aux5355ux72ecux7684-mutex-ux7c7bux578bux6765ux652fux6301ux4e92ux65a5ux9501ux6a21ux5f0fux5b83ux7684-lock-ux65b9ux6cd5ux7528ux4e8eux83b7ux53d6ux4ee4ux724ctokenux6b64ux8fc7ux7a0bux4e5fux79f0ux4e3aux4e0aux9501unlock-ux65b9ux6cd5ux7528ux4e8eux91caux653eux4ee4ux724c}}
+
+\begin{verbatim}
+// Package bank provides a concurrency-safe single-account bank.
+package bank
+
+//!+
+import "sync"
+
+var (
+    mu      sync.Mutex // guards balance
+    balance int
+)
+
+func Deposit(amount int) {
+    mu.Lock()
+    balance = balance + amount
+    mu.Unlock()
+}
+
+func Balance() int {
+    mu.Lock()
+    b := balance
+    mu.Unlock()
+    return b
+}
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  在 Lock 和 Unlock
+  之间的代码，可以自由地读取和修改共享变量，这一部分称为临界区域
+\item
+  这种函数、互斥锁、变量的组合方式称为监控（monitor）模式
+\item
+  \textbf{Go语言的 defer 语句}：通过延迟执行 Unlock
+  就可以把临界区域隐式扩展到当前函数的结尾，避免了必须在一个或者多个远离
+  Lock 的位置插入一条 Unlock 语句
+\end{itemize}
+
+\begin{verbatim}
+func Balance() int {
+    mu.Lock()
+    defer mu.Unlock()
+    return balance
+}
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  另一个问题：下面的代码 Deposit 会通过调用 mu.Lock()
+  来尝试再次获取互斥锁，但由于互斥锁是不能再入的（无法对一个已经上锁的五斥量再上锁），因此这会导致死锁，Withdraw
+  会一直被卡住
+\end{itemize}
+
+\begin{verbatim}
+func Withdraw(amount int) bool {
+    mu.Lock()
+    defer mu.Unlock()
+    Deposit(-amount)
+    if Balance() < 0 {
+        Deposit (amount)
+        return false //余额不足
+    }
+    return true
+}
+\end{verbatim}
+
+解决方法：
+
+\begin{verbatim}
+func Withdraw(amount int) bool {
+    mu.Lock()
+    defer mu.Unlock()
+    deposit(-amount)
+    if Balance() < 0 {
+        deposit (amount)
+        return false //余额不足
+    }
+    return true
+}
+
+func Deposit(amount int) {
+    mu.Lock()
+    defer mu.Unlock()
+    deposit (amount)
+}
+\end{verbatim}
+
+\hypertarget{ux8bfbux5199ux4e92ux65a5ux9501sync.rwmutex}{%
+\subsection{9.3
+读写互斥锁：sync.RWMutex}\label{ux8bfbux5199ux4e92ux65a5ux9501sync.rwmutex}}
+
+\begin{verbatim}
+var mu sync.RWMutex
+var balance int
+
+func Balance() int {
+    mu.RLock()
+    defer mu.RUnlock()
+    return balance
+}
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  Rlock
+  仅可用于在临界区域内对共享变量元写操作的情形。一般来讲，我们不应当假定那些逻辑上只读的函数和方法不会更新一些变量
+\item
+  因为复杂的内部簿记工作，仅在绝大部分 goroutine
+  都在获取读锁并且锁竞争比较激烈时（即，goroutine
+  一般都需要等待后才能获到锁），RWMutex 才有优势
+\end{itemize}
+
+\hypertarget{ux5185ux5b58ux540cux6b65}{%
+\subsection{9.4 内存同步}\label{ux5185ux5b58ux540cux6b65}}
+
+\begin{verbatim}
+var x, y int
+go func() {
+    x = 1 // A1
+    fmt.Print ("y:", y, " ") // A2
+}()
+go func() {
+    y = 1 // A1
+    fmt.Print ("x:", x, " ") // A2
+}()
+\end{verbatim}
+
+可能的结果: y:0 x:1 x:0 y:1 x:1 y:1 y:1 x:1 x:0 y:0 y:0 x:0
+
+\begin{itemize}
+\tightlist
+\item
+  goroutine 是串行一致的（sequentially
+  consistent），但在缺乏使用通道或者互斥量来显式同步的情况下，并不能保证所有的
+  goroutine 看到的事件顺序都是一致的
+\end{itemize}
+
+\hypertarget{ux5ef6ux8fdfux521dux59cbux5316sync.once}{%
+\subsection{9.5
+延迟初始化：sync.Once}\label{ux5ef6ux8fdfux521dux59cbux5316sync.once}}
+
+\begin{verbatim}
+var icons map[string]image.Image
+
+func loadIcons() {
+    icons = map[string]image.Image{
+        "spades.png": loadlcon("spades.png”),
+        "hearts.png"：load Icon （"hearts.png"）,
+        "diamonds.png": load Icon("diamonds.png"),
+        "clubs.png" : loadlcon("clubs.png”),
+    }
+}
+
+// 注意：并发不安全
+func Icon(name string) image.Image {
+    if icons == nil {
+        loadIcons()
+    }
+    return icon[name]
+}
+\end{verbatim}
+
+语句可能被如下重排：
+
+\begin{verbatim}
+func loadIcons() {
+    icons = make(map[string]image.Image)
+    icons["spades.png"] = load Icon("spades.png”),
+    icons["hearts.png"] = load Icon （"hearts.png"）,
+    icons["diamonds.png"] = load Icon("diamonds.png"),
+    icons["clubs.png"] = load Icon("clubs.png”),
+}
+\end{verbatim}
+
+解决方法：
+
+\begin{verbatim}
+// 注意：并发安全
+func Icon(name string) image.Image {
+    mu.Lock()
+    defer mu.Unlock()
+    if icons == nil {
+        loadIcons()
+    }
+    return icon[name]
+}
+\end{verbatim}
+
+使两个 goroutine 可以并发访问 icons：
+
+\begin{verbatim}
+// 注意：并发安全
+func Icon(name string) image.Image {
+    mu.RLock()
+    if icons != nil {
+        icon := icons[name]
+        mu.RUnlock()
+        return icon
+    }
+    mu.RUnlock()
+    
+    mu.Lock()
+    if icons == nil {
+        loadIcons()
+    }
+    icon := icons[name]
+    mu.Unlock()
+    return icon
+}
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  sync.Once 提供了这种一次性初始化问题的解决方案
+\item
+  Once
+  包含一个布尔变量和一个互斥量，布尔变量记录初始化是否已经完成，互斥量则负责保护这个布尔变量和客户端的数据结构
+\end{itemize}
+
+\begin{verbatim}
+var loadIconsOnce sync.Once
+var icons map[string]image.Image
+
+// 并发安全
+func Icon(name string) image.Image {
+    loadiconsOnce.Do(loadicons)
+    return icons[name]
+}
+\end{verbatim}
+
+\subsection{9.6 竞态检测器}
+
+\begin{itemize}
+\tightlist
+\item
+  简单地把 race 命令行参数加到 go build 、go run 、go test
+  命令里边即可使用竞态检测器功能
+\item
+  它会让编译器为你的应用或测试构建一个修改后的版本，它使用额外的手法高效记录在执行时对共享变量的所有访问，以及读写这些变量的goroutine
+  标识，以及所有的同步事件
+\end{itemize}
+
+\hypertarget{ux793aux4f8b}{%
+\subsection{9.7 示例}\label{ux793aux4f8b}}
+
+\hypertarget{goroutine-ux4e0eux7ebfux7a0b}{%
+\subsection{9.8 goroutine 与线程}\label{goroutine-ux4e0eux7ebfux7a0b}}
+
+\hypertarget{ux672cux8d28ux4e0aux4e24ux8005ux5deeux522bux662fux91cfux53d8}{%
+\subsubsection{本质上两者差别是量变}\label{ux672cux8d28ux4e0aux4e24ux8005ux5deeux522bux662fux91cfux53d8}}
+
+\hypertarget{ux4e09ux4e2aux533aux5206ux70b9}{%
+\subsubsection{三个区分点：}\label{ux4e09ux4e2aux533aux5206ux70b9}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  可增长的栈
+\item
+  goroutine 调度：Go 包含自己的一个调度器，由特定 Go 语言结构出发
+\item
+  GOMAXPROCS：Go 调度器使用 GOMAXPROCS 参数来确定需要使用多少个 OS
+  线程来同时执行 Go 代码
+\end{enumerate}

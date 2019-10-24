@@ -1,0 +1,598 @@
+\hypertarget{ux51fdux6570ux58f0ux660e}{%
+\section{函数声明}\label{ux51fdux6570ux58f0ux660e}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ name(parameter-list) (result-list) \{}
+\NormalTok{  body}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{example}{%
+\subsection{example}\label{example}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ hypot(x,y }\DataTypeTok{float64}\NormalTok{) }\DataTypeTok{float64}\NormalTok{ \{}
+  \KeywordTok{return}\NormalTok{ math.Sqrt(x*x + y*y)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux540cux7c7bux578bux53efux4ee5ux653eux5728ux4e00ux8d77}{%
+\subsection{同类型可以放在一起}\label{ux540cux7c7bux578bux53efux4ee5ux653eux5728ux4e00ux8d77}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ f(i, j, k }\DataTypeTok{int}\NormalTok{, s, t }\DataTypeTok{string}\NormalTok{) \{}\CommentTok{/*...*/}\NormalTok{\}}
+\KeywordTok{func}\NormalTok{ f(i }\DataTypeTok{int}\NormalTok{, j }\DataTypeTok{int}\NormalTok{, k }\DataTypeTok{int}\NormalTok{, s }\DataTypeTok{string}\NormalTok{, t }\DataTypeTok{string}\NormalTok{)\{}\CommentTok{/*...*/}\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux9700ux8981ux6ce8ux610fux70b9}{%
+\subsection{需要注意点}\label{ux9700ux8981ux6ce8ux610fux70b9}}
+
+\begin{enumerate}
+\item
+  go 语言没有默认参数的概念，也不能指定参数名
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{def}\NormalTok{ some(name}\OperatorTok{=}\DecValTok{10}\NormalTok{, kkk}\OperatorTok{=}\DecValTok{20}\NormalTok{):}
+    \BuiltInTok{print}\NormalTok{(name)}
+
+\NormalTok{some(name}\OperatorTok{=}\DecValTok{11}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+\item
+  函数类型（具有相同形参列表和返回列表的函数是同种类型）
+\item
+  没有函数体的函数声明，可能是来自于go语言之外的语言实现的。
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{package}\NormalTok{ math}
+\KeywordTok{func}\NormalTok{ sin(x }\DataTypeTok{float64}\NormalTok{) }\DataTypeTok{float64} \CommentTok{// 使用汇编语言实现 （等到12章，才会明白）}
+\end{Highlighting}
+\end{Shaded}
+\end{enumerate}
+
+\hypertarget{ux9012ux5f52}{%
+\section{递归}\label{ux9012ux5f52}}
+
+\hypertarget{ux591aux503cux8fd4ux56de}{%
+\section{多值返回}\label{ux591aux503cux8fd4ux56de}}
+
+\hypertarget{ux5ffdux7565ux53c2ux6570}{%
+\subsection{忽略参数}\label{ux5ffdux7565ux53c2ux6570}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{links, _ := findlines(url)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux4f20ux9012ux53c2ux6570}{%
+\subsection{传递参数}\label{ux4f20ux9012ux53c2ux6570}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ findLinksLog(url }\DataTypeTok{string}\NormalTok{) ([]}\DataTypeTok{string}\NormalTok{, }\DataTypeTok{error}\NormalTok{) \{}
+\NormalTok{  log.Printf(}\StringTok{"findLinks %s"}\NormalTok{, url)}
+  \KeywordTok{return}\NormalTok{ findLinks(url)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux6709ux7684ux51fdux6570ux4e5fux63a5ux53d7ux591aux8fd4ux56deux503cux51fdux6570ux4f5cux4e3aux591aux53c2ux6570}{%
+\subsection{有的函数也接受多返回值函数，作为多参数}\label{ux6709ux7684ux51fdux6570ux4e5fux63a5ux53d7ux591aux8fd4ux56deux503cux51fdux6570ux4f5cux4e3aux591aux53c2ux6570}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{log.Println(findLinks(url))}
+\CommentTok{// 和下面的调用等价}
+\NormalTok{links, err := findLinks(url)}
+\NormalTok{log.Println(links, err)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux88f8ux8fd4ux56de}{%
+\subsection{裸返回}\label{ux88f8ux8fd4ux56de}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ CountWordsAndImages(url }\DataTypeTok{string}\NormalTok{) (words, images }\DataTypeTok{int}\NormalTok{, err }\DataTypeTok{error}\NormalTok{) \{}
+\NormalTok{  resp, err := http.Get(url)}
+  \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+    \KeywordTok{return}
+\NormalTok{  \}}
+\NormalTok{  doc, err := html.Parse(resp.Body)}
+\NormalTok{  resp.Body.Close()}
+  \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{    err = fmt.Errorf(}\StringTok{"parsing HTML: %s"}\NormalTok{, err)}
+    \KeywordTok{return}
+\NormalTok{  \}}
+  \CommentTok{//(这种匿名返回，会让人很难受，让然误解。所以尽量少用这种返回)}
+\NormalTok{  words, images = countWordsAndImages(doc)}
+  \KeywordTok{return}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ countWordsAndImages(n *html.Node) (words, images }\DataTypeTok{int}\NormalTok{) \{ }\CommentTok{/* ... */}\NormalTok{ \}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux9519ux8bef}{%
+\section{错误}\label{ux9519ux8bef}}
+
+这里主要讲错误的处理策略
+
+\hypertarget{ux76f4ux63a5ux5411ux4e0aux4e00ux5c42ux8c03ux7528ux8005ux6c47ux62a5}{%
+\subsection{直接向上一层调用者汇报}\label{ux76f4ux63a5ux5411ux4e0aux4e00ux5c42ux8c03ux7528ux8005ux6c47ux62a5}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{resp, err := http.Get(url)}
+\KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+  \KeywordTok{return} \OtherTok{nil}\NormalTok{, err}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux91cdux8bd5ux82e5ux5e72ux6b21ux518dux62a5ux9519ux9000ux51fa}{%
+\subsection{重试若干次再报错退出}\label{ux91cdux8bd5ux82e5ux5e72ux6b21ux518dux62a5ux9519ux9000ux51fa}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ WaitForServer(url }\DataTypeTok{string}\NormalTok{) }\DataTypeTok{error}\NormalTok{ \{}
+  \KeywordTok{const}\NormalTok{ timeout = }\DecValTok{1}\NormalTok{ * time.Minute}
+\NormalTok{  deadline := time.Now().Add(timeout)}
+  \KeywordTok{for}\NormalTok{ tries := }\DecValTok{0}\NormalTok{; time.Now().Before(deadline); tries++ \{}
+\NormalTok{    _, err := http.Head(url)}
+    \KeywordTok{if}\NormalTok{ err == }\OtherTok{nil}\NormalTok{ \{}
+      \KeywordTok{return} \OtherTok{nil} \CommentTok{// success}
+\NormalTok{    \}}
+\NormalTok{    log.Printf(}\StringTok{"server not responding (%s); retrying..."}\NormalTok{, err)}
+\NormalTok{    time.Sleep(time.Second << }\DataTypeTok{uint}\NormalTok{(tries)) }\CommentTok{// exponential back-off}
+\NormalTok{  \}}
+  \KeywordTok{return}\NormalTok{ fmt.Errorf(}\StringTok{"server %s failed to respond after %s"}\NormalTok{, url, timeout)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux76f4ux63a5ux7ec8ux6b62ux7a0bux5e8f}{%
+\subsection{直接终止程序}\label{ux76f4ux63a5ux7ec8ux6b62ux7a0bux5e8f}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{// (In function main.)}
+\KeywordTok{if}\NormalTok{ err := WaitForServer(url); err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{  fmt.Fprintf(os.Stderr, }\StringTok{"Site is down: %v}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, err)}
+\NormalTok{  os.Exit(}\DecValTok{1}\NormalTok{)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+应该由主程序来做。不应该由库函数来做。库函数应该报告错误就行了。
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{log.Fatalf }\CommentTok{// 可以实现日志输出}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux67d0ux4e9bux60c5ux51b5ux4e0bux53eaux662fux8bb0ux5f55ux9519ux8befux4fe1ux606fux7136ux540eux7ee7ux7eedux8fd0ux884c}{%
+\subsection{某些情况下，只是记录错误信息，然后继续运行}\label{ux67d0ux4e9bux60c5ux51b5ux4e0bux53eaux662fux8bb0ux5f55ux9519ux8befux4fe1ux606fux7136ux540eux7ee7ux7eedux8fd0ux884c}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{if}\NormalTok{ err := WaitForServer(url); err != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{  log.Fatalf(}\StringTok{"Site is down: %v}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, err)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux76f4ux63a5ux5ffdux7565ux6389ux9519ux8bef}{%
+\subsection{直接忽略掉错误}\label{ux76f4ux63a5ux5ffdux7565ux6389ux9519ux8bef}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dir, err := ioutil.TempDir(}\StringTok{""}\NormalTok{, }\StringTok{"scratch"}\NormalTok{)}
+\KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+  \KeywordTok{return}\NormalTok{ fmt.Errorf(}\StringTok{"failed to create temp dir: %v"}\NormalTok{, err)}
+\NormalTok{\}}
+\CommentTok{// ...use temp dir...}
+\NormalTok{os.RemoveAll(dir) }\CommentTok{// 这个函数可能会错误，但是这里忽略了处理。}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux51fdux6570ux53d8ux91cf}{%
+\section{函数变量}\label{ux51fdux6570ux53d8ux91cf}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{var}\NormalTok{ f }\KeywordTok{func}\NormalTok{(}\DataTypeTok{int}\NormalTok{) }\DataTypeTok{int}
+\end{Highlighting}
+\end{Shaded}
+
+注意，函数变量之间不可以比较。所以不能把函数变量作为map的key值。但是函数类型可以和nil比较。
+
+作为参数的函数变量
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ forEachNode(n *html.Node, pre, post }\KeywordTok{func}\NormalTok{(n *html.Node) }\DataTypeTok{string}\NormalTok{)\{}
+  \CommentTok{//body}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux533fux540dux51fdux6570}{%
+\section{匿名函数}\label{ux533fux540dux51fdux6570}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{strings.}\KeywordTok{map}\NormalTok{(}\KeywordTok{func}\NormalTok{(r }\DataTypeTok{rune}\NormalTok{) }\DataTypeTok{rune}\NormalTok{ \{}\KeywordTok{return}\NormalTok{ r+}\DecValTok{1}\NormalTok{\}, }\StringTok{"HAL-9000"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux95edux5305ux7684ux6982ux5ff5}{%
+\subsection{闭包的概念}\label{ux95edux5305ux7684ux6982ux5ff5}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ squares() }\KeywordTok{func}\NormalTok{() }\DataTypeTok{int}\NormalTok{ \{}
+  \KeywordTok{var}\NormalTok{ x }\DataTypeTok{int}
+  \KeywordTok{return} \KeywordTok{func}\NormalTok{() }\DataTypeTok{int}\NormalTok{ \{}
+\NormalTok{    x++}
+    \KeywordTok{return}\NormalTok{ x * x}
+\NormalTok{  \}}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ main() \{}
+\NormalTok{  f := squares()}
+\NormalTok{  fmt.Println(f()) }\CommentTok{// "1"}
+\NormalTok{  fmt.Println(f()) }\CommentTok{// "4"}
+\NormalTok{  fmt.Println(f()) }\CommentTok{// "9"}
+\NormalTok{  fmt.Println(f()) }\CommentTok{// "16"}
+\NormalTok{  fb := squares()}
+\NormalTok{  fmt.Println(fb()) }\CommentTok{// "1"}
+\NormalTok{  fmt.Println(f())  }\CommentTok{// "25"}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+PS :
+(TonyHuiHUI)给出可以理解为，squares的调用后置，并没有清除squares的堆栈信息。所以x是可以被函数f访问到的。当第二次调用squares的时候再次创建了一个新的堆栈fb就可以访问到新的x了
+
+\hypertarget{ux5bb9ux6613ux51faux9519ux7684ux5730ux65b9}{%
+\subsection{容易出错的地方}\label{ux5bb9ux6613ux51faux9519ux7684ux5730ux65b9}}
+
+\hypertarget{wrong}{%
+\subsubsection{wrong}\label{wrong}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{var}\NormalTok{ rmdirs []}\KeywordTok{func}\NormalTok{()}
+\KeywordTok{for}\NormalTok{ _, dir := }\KeywordTok{range}\NormalTok{ tempDirs() \{}
+
+\NormalTok{  os.MkdirAll(dir, }\DecValTok{0755}\NormalTok{)}
+\NormalTok{  rmdirs = }\BuiltInTok{append}\NormalTok{(rmdirs, }\KeywordTok{func}\NormalTok{() \{}
+\NormalTok{    os.RemoveAll(dir) }\CommentTok{// }\AlertTok{NOTE}\CommentTok{: incorrect!}
+\NormalTok{  \})}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{right}{%
+\subsubsection{right}\label{right}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{var}\NormalTok{ rmdirs []}\KeywordTok{func}\NormalTok{()}
+\KeywordTok{for}\NormalTok{ _, d := }\KeywordTok{range}\NormalTok{ tempDirs() \{}
+\NormalTok{  dir := d               }\CommentTok{// }\AlertTok{NOTE}\CommentTok{: necessary!}
+\NormalTok{  os.MkdirAll(dir, }\DecValTok{0755}\NormalTok{) }\CommentTok{// creates parent directories too}
+\NormalTok{  rmdirs = }\BuiltInTok{append}\NormalTok{(rmdirs, }\KeywordTok{func}\NormalTok{() \{}
+\NormalTok{    os.RemoveAll(dir)}
+\NormalTok{  \})}
+\NormalTok{\}}
+
+\CommentTok{// ...do some work...}
+\KeywordTok{for}\NormalTok{ _, rmdir := }\KeywordTok{range}\NormalTok{ rmdirs \{}
+\NormalTok{  rmdir() }\CommentTok{// clean up}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux53d8ux957fux51fdux6570}{%
+\section{变长函数}\label{ux53d8ux957fux51fdux6570}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ sum(vals ...}\DataTypeTok{int}\NormalTok{) }\DataTypeTok{int}\NormalTok{ \{}
+\NormalTok{  total := }\DecValTok{0}
+  \KeywordTok{for}\NormalTok{ _, val := }\KeywordTok{range}\NormalTok{ vals \{}
+\NormalTok{    total += val}
+\NormalTok{  \}}
+  \KeywordTok{return}\NormalTok{ total}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux7b49ux4ef7ux8c03ux7528}{%
+\subsection{等价调用}\label{ux7b49ux4ef7ux8c03ux7528}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fmt.Println(sum(}\DecValTok{1}\NormalTok{, }\DecValTok{2}\NormalTok{, }\DecValTok{3}\NormalTok{, }\DecValTok{4}\NormalTok{)) }\CommentTok{// "10"}
+\CommentTok{// 等价的调用}
+\NormalTok{values := []}\DataTypeTok{int}\NormalTok{\{}\DecValTok{1}\NormalTok{, }\DecValTok{2}\NormalTok{, }\DecValTok{3}\NormalTok{, }\DecValTok{4}\NormalTok{\}}
+\NormalTok{fmt.Println(sum(values...)) }\CommentTok{// "10"}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux4e0dux540cux7c7bux578b}{%
+\subsection{不同类型}\label{ux4e0dux540cux7c7bux578b}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ f(...}\DataTypeTok{int}\NormalTok{) \{\}}
+\KeywordTok{func}\NormalTok{ g([]}\DataTypeTok{int}\NormalTok{) \{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux5ef6ux8fdfux51fdux6570}{%
+\section{延迟函数}\label{ux5ef6ux8fdfux51fdux6570}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ title(url }\DataTypeTok{string}\NormalTok{) }\DataTypeTok{error}\NormalTok{ \{}
+\NormalTok{  resp, err := http.Get(url)}
+  \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+    \KeywordTok{return}\NormalTok{ err}
+\NormalTok{  \}}
+  \CommentTok{// Check Content-Type is HTML (e.g., "text/html; charset=utf-8").}
+\NormalTok{  ct := resp.Header.Get(}\StringTok{"Content-Type"}\NormalTok{)}
+  \KeywordTok{if}\NormalTok{ ct != }\StringTok{"text/html"}\NormalTok{ && !strings.HasPrefix(ct, }\StringTok{"text/html;"}\NormalTok{) \{}
+\NormalTok{    resp.Body.Close() }\CommentTok{// 调用了一次}
+    \KeywordTok{return}\NormalTok{ fmt.Errorf(}\StringTok{"%s has type %s, not text/html"}\NormalTok{, url, ct)}
+\NormalTok{  \}}
+\NormalTok{  doc, err := html.Parse(resp.Body)}
+\NormalTok{  resp.Body.Close() }\CommentTok{// 调用了一次}
+  \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+    \KeywordTok{return}\NormalTok{ fmt.Errorf(}\StringTok{"parsing %s as HTML: %v"}\NormalTok{, url, err)}
+\NormalTok{  \}}
+
+\NormalTok{  visitNode := }\KeywordTok{func}\NormalTok{(n *html.Node) \{}
+    \KeywordTok{if}\NormalTok{ n.Type == html.ElementNode && n.Data == }\StringTok{"title"}\NormalTok{ &&}
+\NormalTok{      n.FirstChild != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{      fmt.Println(n.FirstChild.Data)}
+\NormalTok{    \}}
+\NormalTok{  \}}
+\NormalTok{  forEachNode(doc, visitNode, }\OtherTok{nil}\NormalTok{)}
+  \KeywordTok{return} \OtherTok{nil}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{defer}{%
+\subsection{defer}\label{defer}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ title(url }\DataTypeTok{string}\NormalTok{) }\DataTypeTok{error}\NormalTok{ \{}
+\NormalTok{  resp, err := http.Get(url)}
+  \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+    \KeywordTok{return}\NormalTok{ err}
+\NormalTok{  \}}
+  \KeywordTok{defer}\NormalTok{ resp.Body.Close() }\CommentTok{// 发生在return之后}
+\NormalTok{  ct := resp.Header.Get(}\StringTok{"Content-Type"}\NormalTok{)}
+  \KeywordTok{if}\NormalTok{ ct != }\StringTok{"text/html"}\NormalTok{ && !strings.HasPrefix(ct, }\StringTok{"text/html;"}\NormalTok{) \{}
+    \KeywordTok{return}\NormalTok{ fmt.Errorf(}\StringTok{"%s has type %s, not text/html"}\NormalTok{, url, ct)}
+\NormalTok{  \}}
+\NormalTok{  doc, err := html.Parse(resp.Body)}
+  \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+    \KeywordTok{return}\NormalTok{ fmt.Errorf(}\StringTok{"parsing %s as HTML: %v"}\NormalTok{, url, err)}
+\NormalTok{  \}}
+  \CommentTok{// ...print doc's title element...}
+  \KeywordTok{return} \OtherTok{nil}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux6ce8ux610f}{%
+\subsection{注意}\label{ux6ce8ux610f}}
+
+\begin{enumerate}
+\tightlist
+\item
+  defer 没有限制使用次数，执行的时候以调用defer的顺序倒序执行。
+\item
+  defer 语句的求值是在执行defer语句的时候执行。
+\item
+  defer 的执行在return语句之后。
+\end{enumerate}
+
+\hypertarget{ux6539ux53d8ux8fd4ux56deux503cux7ed3ux679c}{%
+\subsection{改变返回值结果}\label{ux6539ux53d8ux8fd4ux56deux503cux7ed3ux679c}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ double(x }\DataTypeTok{int}\NormalTok{) (result }\DataTypeTok{int}\NormalTok{) \{}
+  \KeywordTok{defer} \KeywordTok{func}\NormalTok{() \{ fmt.Printf(}\StringTok{"double(%d) = %d}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, x, result) \}()}\CommentTok{// return 后执行打印操作}
+  \KeywordTok{return}\NormalTok{ x + x}
+\NormalTok{\}}
+\NormalTok{_ = double(}\DecValTok{4}\NormalTok{)}
+\CommentTok{// Output:}
+\CommentTok{// "double(4) = 8"}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ triple(x }\DataTypeTok{int}\NormalTok{) (result }\DataTypeTok{int}\NormalTok{) \{}
+  \KeywordTok{defer} \KeywordTok{func}\NormalTok{() \{ result += x \}()}
+  \KeywordTok{return}\NormalTok{ double(x)}
+\NormalTok{\}}
+\NormalTok{fmt.Println(triple(}\DecValTok{4}\NormalTok{)) }\CommentTok{// "12" 改变了返回值}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux6587ux4ef6ux63cfux8ff0ux7b26ux5e94ux7528}{%
+\subsection{文件描述符应用}\label{ux6587ux4ef6ux63cfux8ff0ux7b26ux5e94ux7528}}
+
+\hypertarget{ux53efux80fdux4f1aux8017ux5c3dux6587ux4ef6ux63cfux8ff0ux7b26ux8d44ux6e90}{%
+\subsubsection{可能会耗尽文件描述符资源}\label{ux53efux80fdux4f1aux8017ux5c3dux6587ux4ef6ux63cfux8ff0ux7b26ux8d44ux6e90}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{for}\NormalTok{ _, filename := }\KeywordTok{range}\NormalTok{ filenames \{}
+\NormalTok{  f, err := os.Open(filename)}
+  \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+    \KeywordTok{return}\NormalTok{ err}
+\NormalTok{  \}}
+  \KeywordTok{defer}\NormalTok{ f.Close() }\CommentTok{// }\AlertTok{NOTE}\CommentTok{: risky; could run out of file descriptors}
+  \CommentTok{// ...process f...}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux66f4ux597dux7684ux65b9ux6cd5}{%
+\subsubsection{更好的方法}\label{ux66f4ux597dux7684ux65b9ux6cd5}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{for}\NormalTok{ _, filename := }\KeywordTok{range}\NormalTok{ filenames \{}
+  \KeywordTok{if}\NormalTok{ err := doFile(filename); err != }\OtherTok{nil}\NormalTok{ \{}
+    \KeywordTok{return}\NormalTok{ err}
+\NormalTok{  \}}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ doFile(filename }\DataTypeTok{string}\NormalTok{) }\DataTypeTok{error}\NormalTok{ \{}
+\NormalTok{  f, err := os.Open(filename)}
+  \KeywordTok{if}\NormalTok{ err != }\OtherTok{nil}\NormalTok{ \{}
+    \KeywordTok{return}\NormalTok{ err}
+\NormalTok{  \}}
+  \KeywordTok{defer}\NormalTok{ f.Close()}
+  \CommentTok{// ...process f...}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ux5b95ux673apanic}{%
+\section{宕机(panic)}\label{ux5b95ux673apanic}}
+
+\hypertarget{ux6ce8ux610f-1}{%
+\subsection{注意}\label{ux6ce8ux610f-1}}
+
+\begin{enumerate}
+\item
+  宕机会导致程序退出，只有在十分严重的错误情况下才可以宕机。
+\item
+  当发生宕机时，所有的延迟函数以倒序执行，直到回到main函数
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ main() \{}
+\NormalTok{  f(}\DecValTok{3}\NormalTok{)}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ f(x }\DataTypeTok{int}\NormalTok{) \{}
+\NormalTok{  fmt.Printf(}\StringTok{"f(%d)}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, x+}\DecValTok{0}\NormalTok{/x) }\CommentTok{// panics if x == 0}
+  \KeywordTok{defer}\NormalTok{ fmt.Printf(}\StringTok{"defer %d}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, x)}
+\NormalTok{  f(x - }\DecValTok{1}\NormalTok{)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+  outputs
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{f}\NormalTok{(3)}
+\ExtensionTok{f}\NormalTok{(2)}
+\ExtensionTok{f}\NormalTok{(1)}
+\ExtensionTok{defer}\NormalTok{ 1}
+\ExtensionTok{defer}\NormalTok{ 2}
+\ExtensionTok{defer}\NormalTok{ 3}
+\end{Highlighting}
+\end{Shaded}
+\end{enumerate}
+
+\hypertarget{runtime}{%
+\subsection{runtime}\label{runtime}}
+
+runtime包提供了转储栈的方法使程序员可以诊断错误。
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{gopl.io/ch5/defer2}
+
+\KeywordTok{func}\NormalTok{ main() \{}
+  \KeywordTok{defer}\NormalTok{ printStack()}
+\NormalTok{  f(}\DecValTok{3}\NormalTok{)}
+\NormalTok{\}}
+
+\KeywordTok{func}\NormalTok{ printStack() \{}
+  \KeywordTok{var}\NormalTok{ buf [}\DecValTok{4096}\NormalTok{]}\DataTypeTok{byte}
+\NormalTok{  n := runtime.Stack(buf[:], }\OtherTok{false}\NormalTok{)}
+\NormalTok{  os.Stdout.Write(buf[:n])}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+为什么可以打印出栈，因为go语言的宕机机制可以让延迟函数的执行在栈清理之前调用
+
+\hypertarget{ux6062ux590d}{%
+\section{恢复}\label{ux6062ux590d}}
+
+recover可以劫持宕机，然后处理之后恢复运行
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ Parse(input }\DataTypeTok{string}\NormalTok{) (s *Syntax, err }\DataTypeTok{error}\NormalTok{) \{}
+  \KeywordTok{defer} \KeywordTok{func}\NormalTok{() \{}
+    \KeywordTok{if}\NormalTok{ p := }\BuiltInTok{recover}\NormalTok{(); p != }\OtherTok{nil}\NormalTok{ \{}
+\NormalTok{      err = fmt.Errorf(}\StringTok{"internal error: %v"}\NormalTok{, p) }\CommentTok{// 这里就会恢复，程序不会退出}
+\NormalTok{    \}}
+\NormalTok{  \}()}
+  \CommentTok{// ...parser... 假如在这里发生宕机}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{func}\NormalTok{ soleTitle(doc *html.Node) (title }\DataTypeTok{string}\NormalTok{, err }\DataTypeTok{error}\NormalTok{) \{}
+  \KeywordTok{type}\NormalTok{ bailout }\KeywordTok{struct}\NormalTok{\{\}}
+  \KeywordTok{defer} \KeywordTok{func}\NormalTok{() \{}
+    \KeywordTok{switch}\NormalTok{ p := }\BuiltInTok{recover}\NormalTok{(); p \{}
+    \KeywordTok{case} \OtherTok{nil}\NormalTok{:}
+      \CommentTok{// no panic}
+    \KeywordTok{case}\NormalTok{ bailout\{\}:}
+      \CommentTok{// "expected" panic}
+\NormalTok{      err = fmt.Errorf(}\StringTok{"multiple title elements"}\NormalTok{)}
+    \KeywordTok{default}\NormalTok{:}
+      \BuiltInTok{panic}\NormalTok{(p) }\CommentTok{// unexpected panic; carry on panicking}
+\NormalTok{    \}}
+\NormalTok{  \}() }\CommentTok{// 定义了一个函数并调用之这是个匿名函数（延迟调用）}
+
+  \CommentTok{// Bail out of recursion if we find more than one non-empty title.}
+\NormalTok{  forEachNode(doc, }\KeywordTok{func}\NormalTok{(n *html.Node) \{}
+    \KeywordTok{if}\NormalTok{ n.Type == html.ElementNode && n.Data == }\StringTok{"title"}\NormalTok{ &&}
+\NormalTok{      n.FirstChild != }\OtherTok{nil}\NormalTok{ \{}
+      \KeywordTok{if}\NormalTok{ title != }\StringTok{""}\NormalTok{ \{}
+        \BuiltInTok{panic}\NormalTok{(bailout\{\}) }\CommentTok{// 宕机发生地}
+\NormalTok{      \}}
+\NormalTok{      title = n.FirstChild.Data}
+\NormalTok{    \}}
+\NormalTok{  \}, }\OtherTok{nil}\NormalTok{)}
+  \KeywordTok{if}\NormalTok{ title == }\StringTok{""}\NormalTok{ \{}
+    \KeywordTok{return} \StringTok{""}\NormalTok{, fmt.Errorf(}\StringTok{"no title element"}\NormalTok{)}
+\NormalTok{  \}}
+  \KeywordTok{return}\NormalTok{ title, }\OtherTok{nil}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+

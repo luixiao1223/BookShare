@@ -1,0 +1,173 @@
+\hypertarget{ux5305ux548cgoux5de5ux5177}{%
+\subsection{包和go工具}\label{ux5305ux548cgoux5de5ux5177}}
+
+\hypertarget{ux5305ux8defux5f84}{%
+\paragraph{包路径}\label{ux5305ux8defux5f84}}
+
+1.全局唯一性
+
+2.应该以互联网域名作为开始
+
+\begin{verbatim}
+import ( 
+"fmt"
+"math/rand"
+"encoding/json"
+"golang.org/x/net/html" 
+"github.com/go-sql-driver/mysql"
+)
+\end{verbatim}
+
+\hypertarget{ux5305ux58f0ux660e}{%
+\paragraph{包声明}\label{ux5305ux58f0ux660e}}
+
+\begin{verbatim}
+package xxx
+\end{verbatim}
+
+\hypertarget{ux5305ux5bfcux5165}{%
+\paragraph{包导入}\label{ux5305ux5bfcux5165}}
+
+\begin{verbatim}
+import "fmt" 
+import "os"
+
+import ( 
+    "fmt" 
+    "os"
+)
+\end{verbatim}
+
+重名导入
+
+\begin{verbatim}
+import ( 
+    "crypto/rand"
+    mrand "math/rand" // 通过指定一个不同的名称mrand就避免了冲突
+    )
+\end{verbatim}
+
+每个导入声明从当前包向导入的包建立一个依赖 如果这些依赖形成一个循环，go
+build 工具会报错
+
+\hypertarget{ux7a7aux5bfcux5165}{%
+\paragraph{空导入}\label{ux7a7aux5bfcux5165}}
+
+\begin{verbatim}
+import _ "image/png" //注册 PNG 解码器
+\end{verbatim}
+
+如果导人的包的名字没有在文件中引用，就会产生一个编译错误。但是，有时候，我们
+必须导人一个包，这仅仅是为了利用其副作用：对包级别的变量执行初始化表达式求值，并
+执行它的init 函数。
+
+\hypertarget{goux5de5ux5177}{%
+\paragraph{go工具}\label{goux5de5ux5177}}
+
+go 工具（go
+tool），它用来下载、查询、格式化、构建、测试以及安装Go代码包。
+
+\hypertarget{ux5de5ux4f5cux7a7aux95f4ux7684ux7ec4ux7ec7}{%
+\paragraph{工作空间的组织}\label{ux5de5ux4f5cux7a7aux95f4ux7684ux7ec4ux7ec7}}
+
+在安装go工具时，通过GOPATH环境变量来指定工作空间的根。而在工作空间下有三个子目录，他们分别代表着：
+src:源文件目录，每一个包放在一个目录中。
+pkg：构建工具存储编译后的包的位置。 bin：放置可执行程序。
+
+\hypertarget{ux5305ux7684ux4e0bux8f7d}{%
+\paragraph{包的下载}\label{ux5305ux7684ux4e0bux8f7d}}
+
+go get 命令 go get -u 可以指定下载最新的版本的包
+
+\hypertarget{ux5305ux7684ux6784ux5efa}{%
+\paragraph{包的构建}\label{ux5305ux7684ux6784ux5efa}}
+
+go build 命令
+
+如果包的名字是main，则go
+build命令调用链接器在当前目录中创建可执行程序，可执行程序的名字取自包的导入路径的最后一段。
+
+go run命令可以将包的构建和运行合并起来
+
+\begin{verbatim}
+$ go run quoteags.go one "two three" four\ five 
+["one" "two three" "four five"]
+\end{verbatim}
+
+第一个不是以 go 文件结尾的参数会作为 Go 可执行程序的参数列表的开始
+
+go install 令和 go
+build非常相似，区别是它会保存每一个包的编译代码和命令，而不是把它们丢弃,而是保存在\$GOPATH/pkg目录中。这样于没有改变的包和命令不需要重新编译，从而使后续的构建更加快速。
+
+\hypertarget{ux6784ux5efaux6807ux7b7e}{%
+\paragraph{构建标签}\label{ux6784ux5efaux6807ux7b7e}}
+
+在包的声明之前的注释
+
+\begin{verbatim}
+//+build linux darwin  表明go build只会在构建Linux 或者Mac OS X 系统应用的时候才会对它进行编译
+//+build ignore  任何时候都不要编译这个文件：
+\end{verbatim}
+
+\hypertarget{ux5305ux7684ux6587ux6863ux5316}{%
+\paragraph{包的文档化}\label{ux5305ux7684ux6587ux6863ux5316}}
+
+\begin{verbatim}
+// Fprintf 根据格式说明符格式化并写入w
+// 返回写入的字节数及可能遇到的错误
+func Fprintf(w io.Writer,format string,a ... interface{}) (int,error)
+\end{verbatim}
+
+包声明的前面的文档注释被认为是整个包的文档注释，且只有一个。如果包的注释比较长可以使用一个注释文件，通常叫做doc.go
+
+go doc 工具输出在命令行上指定的内容的声明和整个文档注释.
+
+godoc工具 它提供相互链接的HTM 页面服务，进而提供不少于go doc命令的信息
+
+\begin{verbatim}
+$ godoc -http :8000
+\end{verbatim}
+
+\hypertarget{ux5185ux90e8ux5305}{%
+\paragraph{内部包}\label{ux5185ux90e8ux5305}}
+
+这是包用来封装Go程序最重要的机制。没有导出的标识符只能在同一个包内访问，导出的标识符可以在世界任何地方访问。
+
+go build
+工具会特殊对待导人路径中包含路径片段internal的情况，这些包叫内部包。
+
+\begin{verbatim}
+net/http 
+net/http/internal/chunked (内部包)
+net/http/httputil 
+net/url
+\end{verbatim}
+
+net/http/internal/chunked
+(内部包)可以从net/http或者net/http/httputil导入，但是不能从net/url导入。然而，net/url
+可以导入 net/http/httputil。
+
+\hypertarget{ux5305ux7684ux67e5ux8be2}{%
+\paragraph{包的查询}\label{ux5305ux7684ux67e5ux8be2}}
+
+go list
+工具上报可用包的信息。判断一个包是否存在于工作空间中，如果存在输出它的导人路径。
+
+可使用通配符\texttt{...},用来匹配包的导入路径中的任意字串。
+
+\begin{verbatim}
+$ go list ... //枚举一个go工作空间的所有包
+$ go list  gopl.io/ch3/... //列举指定子树中的所有包
+$ go list ...xml... //一个具体的主题
+\end{verbatim}
+
+go list 命令获取每
+个包的完整元数据，而不仅仅是导人路径，并且提供各种对于用户或者其他工具可访问的格式。
+
+-json 标记使go list以JSON格式输出每个包的完整记录
+
+\begin{verbatim}
+$ go list -json hash
+\end{verbatim}
+
+-f 标记可以让用户通过text/template包提供的模板语言定制输出格式。
