@@ -21,6 +21,10 @@ http://open.163.com/special/opencourse/algorithms.html
 
 https://www.youtube.com/watch?v=HtSuA80QTyo&list=PLUl4u3cNGP61Oq3tWYp6V_F-5jb5L2iHb&index=1
 
+*** bilibili
+
+https://www.bilibili.com/video/av34605246?from=search&seid=13752376085478972861
+
 * speakers
 
 1. [[https://github.com/rythmE][rythmE]]
