@@ -1,0 +1,30 @@
+#+TITLE: 算法导论
+
+* 时间
+
+|       From | To |
+|------------+----|
+| 2019-11-03 |    |
+
+* 学习资源
+
+** 书籍
+
+《Introduction Algorithms 3rd Edition》
+
+** 公开课资源
+
+http://open.163.com/special/opencourse/algorithms.html
+
+* speakers
+
+1. [[https://github.com/rythmE][rythmE]]
+2. [[https://github.com/TonyHuiHUI][TonyHuiHUI]]
+3. [[https://github.com/luixiao1223][luixiao1223]]
+
+* 章节分配
+
+| Chapter | speaker     | time             |
+|---------+-------------+------------------|
+| Week01  | liuxiao1223 | 2019-11-03 20:00 |
+|         |             |                  |
