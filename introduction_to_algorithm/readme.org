@@ -14,7 +14,12 @@
 
 ** 公开课资源
 
+*** 163
 http://open.163.com/special/opencourse/algorithms.html
+
+*** youtube
+
+https://www.youtube.com/watch?v=HtSuA80QTyo&list=PLUl4u3cNGP61Oq3tWYp6V_F-5jb5L2iHb&index=1
 
 * speakers
 
@@ -26,5 +31,5 @@ http://open.163.com/special/opencourse/algorithms.html
 
 | Chapter | speaker     | time             |
 |---------+-------------+------------------|
-| Week01  | liuxiao1223 | 2019-11-03 20:00 |
+| Week01  | luixiao1223 | 2019-11-03 20:00 |
 |         |             |                  |
