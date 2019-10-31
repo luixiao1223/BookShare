@@ -185,6 +185,16 @@ if a[n] >= a[n-1]
 
 a is a 2D-peak iff $a \geq b, a \geq d, a \geq c, a \geq e$
 
+\subsubsection{straightforward method}
+
+\begin{verbatim}
+for i = 1 to m
+    for j = 1 to n
+        Is a[i][j] a peak?
+\end{verbatim}
+
+时间复杂度$\Theta(mn)$
+
 \subsubsection{贪心算法}
 
 \begin{center}
@@ -212,7 +222,15 @@ a is a 2D-peak iff $a \geq b, a \geq d, a \geq c, a \geq e$
 
 \textbf{贪心算法的复杂度}
 
-最坏情况复杂度$\Theta(mn)$,if n = m, $\Theta(n^2)$
+最坏情况复杂度$\Theta(mn)$,if n = m, $\Theta(n^2)$。其中m，n为数组的两个维度。
+
+\subsubsection{更快的算法}
+
+如何来设计更快的算法，\textbf{分治法}
+
+\begin{itemize}
+\item 如何把原来的数组分开？
+\end{itemize}
 
 \subsubsection{扩展}
 
@@ -222,10 +240,53 @@ a is a 2D-peak iff $a \geq b, a \geq d, a \geq c, a \geq e$
 
 渐进符号一共有5个($O,\Omega,\Theta, o, \omega$)，其中3个($O,\Omega,\Theta$)最为重要也最为常用。
 
+\begin{itemize}
+\item $O(g(n))$
+  \begin{displaymath}
+    O(g(n))=\{f(n): f(n) \leqslant c g(n)\},c\mbox{ is a constant}
+  \end{displaymath}
+
+\item $\Theta(g(n))$
+
+  \begin{displaymath}
+    \Theta(g(n))=\{f(n):c_1g(n)\leqslant f(n) \leqslant c_2 g(n)\},c_1,c_2,\mbox{are constants}
+  \end{displaymath}
+
+  在分析算法复杂度的时候我们使用$f(n)=\Theta(g(n))$，其实是说$f(n)\in \Theta(g(n))$
+
+\item $\Omega(g(n))$
+
+  \begin{displaymath}
+    \Omega(g(n))=\{f(n):cg(n)\leqslant f(n) \},c\mbox{ is a constant}
+  \end{displaymath}
+  
+\item $o(g(n))$
+  \begin{displaymath}
+    O(g(n))=\{f(n): f(n) < c g(n)\},c\mbox{ is a constant}, \lim_{n\rightarrow \infty} \frac{g(n)}{f(n)}=\infty
+  \end{displaymath}
+
+  \item $\omega(g(n))$
+
+  \begin{displaymath}
+    \omega(g(n))=\{f(n):cg(n)< f(n) \},c\mbox{ is a constant} \lim_{n\rightarrow \infty} \frac{g(n))}{f(n)}=0
+  \end{displaymath}
+  
+\end{itemize}
+
+\subsection{类比记忆}
 
 
-
-
+\begin{center}
+  \begin{tabular}{|c|c|}
+    \hline
+    $f(n)=O(g(n))$ & $f(n)\leqslant g(n)$  \\\hline
+    $f(n)=\Theta(g(n))$ & $f(n) = g(n)$  \\\hline
+    $f(n)=\Omega(g(n))$ & $f(n) \geqslant  g(n)$  \\\hline
+    $f(n)=o(g(n))$ & $f(n) < g(n) $ \\\hline
+    $f(n)=\omega(g(n))$ & $f(n) > g(n)$ \\
+    \hline
+  \end{tabular}
+\end{center}
 
 
 \end{CJK}
