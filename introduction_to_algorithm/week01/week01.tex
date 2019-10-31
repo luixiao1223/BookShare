@@ -198,9 +198,21 @@ a is a 2D-peak iff $a \geq b, a \geq d, a \geq c, a \geq e$
   \end{tabular}
 \end{center}
 
+\begin{itemize}
+\item 随机从某个位置开始
+\item 然后挑选它的临接点中大于它的元素作为下一个搜索点。如果没有，那么此节点就是peak，重复此步骤。
+\end{itemize}
+
 \textbf{利用贪心算法来证明必然有2-D peak}
 
+\begin{itemize}
+\item 贪心算法必然终止
+\item 终止位置必然是peak
+\end{itemize}
 
+\textbf{贪心算法的复杂度}
+
+最坏情况复杂度$\Theta(mn)$,if n = m, $\Theta(n^2)$
 
 \subsubsection{扩展}
 
