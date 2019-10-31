@@ -14,16 +14,20 @@
 
 ** 公开课资源
 
-*** 163
+*** 163-老的6.046(2005)年课程，采用的是Introduction Algorithms 2nd Edition
 http://open.163.com/special/opencourse/algorithms.html
 
-*** youtube
+*** youtube-6.006(2011)新课程
 
 https://www.youtube.com/watch?v=HtSuA80QTyo&list=PLUl4u3cNGP61Oq3tWYp6V_F-5jb5L2iHb&index=1
 
-*** bilibili
+*** bilibili-6.006(2011)新课程
 
 https://www.bilibili.com/video/av34605246?from=search&seid=13752376085478972861
+
+** 说明
+
+MIT在2011的视频lecture中将《算法导论》分为了两门课程[[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/][6.006]]和[[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-046j-design-and-analysis-of-algorithms-spring-2015/][6.046]]。后者是前者的高级算法部分，更注重算法的设计和分析。
 
 * speakers
 
