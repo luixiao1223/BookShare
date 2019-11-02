@@ -55,13 +55,13 @@
 \begin{itemize}
 \item $O(g(n))$
   \begin{displaymath}
-    O(g(n))=\{f(n): f(n) \leqslant c g(n)\},c\mbox{ is a constant}
+    O(g(n))=\{f(n): f(n) \leqslant c g(n)\},c > 0\mbox{ is a constant}
   \end{displaymath}
 
 \item $\Theta(g(n))$
 
   \begin{displaymath}
-    \Theta(g(n))=\{f(n):c_1g(n)\leqslant f(n) \leqslant c_2 g(n)\},c_1,c_2,\mbox{are constants}
+    \Theta(g(n))=\{f(n):c_1g(n)\leqslant f(n) \leqslant c_2 g(n)\},c_1>0,c_2>0,\mbox{are constants}
   \end{displaymath}
 
   在分析算法复杂度的时候我们使用$f(n)=\Theta(g(n))$，其实是说$f(n)\in \Theta(g(n))$
@@ -69,18 +69,18 @@
 \item $\Omega(g(n))$
 
   \begin{displaymath}
-    \Omega(g(n))=\{f(n):cg(n)\leqslant f(n) \},c\mbox{ is a constant}
+    \Omega(g(n))=\{f(n):cg(n)\leqslant f(n) \},c>0\mbox{ is a constant}
   \end{displaymath}
   
 \item $o(g(n))$
   \begin{displaymath}
-    O(g(n))=\{f(n): f(n) < c g(n)\},c\mbox{ is a constant}, \lim_{n\rightarrow \infty} \frac{g(n)}{f(n)}=\infty
+    O(g(n))=\{f(n): f(n) < c g(n)\},c>0\mbox{ is a constant}, \lim_{n\rightarrow \infty} \frac{g(n)}{f(n)}=\infty
   \end{displaymath}
 
   \item $\omega(g(n))$
 
   \begin{displaymath}
-    \omega(g(n))=\{f(n):cg(n)< f(n) \},c\mbox{ is a constant} \lim_{n\rightarrow \infty} \frac{g(n))}{f(n)}=0
+    \omega(g(n))=\{f(n):cg(n)< f(n) \},c>0\mbox{ is a constant} \lim_{n\rightarrow \infty} \frac{g(n))}{f(n)}=0
   \end{displaymath}
   
 \end{itemize}
