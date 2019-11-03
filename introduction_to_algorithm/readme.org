@@ -40,6 +40,7 @@ MIT在2011的视频lecture中将《算法导论》分为了两门课程[[https:/
 * speakers
 
 1. [[https://github.com/luixiao1223][luixiao1223]]
+2. [[https://github.com/rythmE][rythmE]]
 
 * 章节分配
 
