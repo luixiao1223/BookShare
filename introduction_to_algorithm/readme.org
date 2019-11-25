@@ -19,12 +19,11 @@ http://open.163.com/special/opencourse/algorithms.html
 
 *** youtube-6.006(2011)新课程
 
-https://www.youtube.com/watch?v=HtSuA80QTyo&list=PLUl4u3cNGP61Oq3tWYp6V_F-5jb5L2iHb&index=1
+https://www.youtube.com/watch?v=HtSuA80QTyo&list=PLUl4u3cNGP61Oq3tWYp6V_F-5jb5L2iHb&index=1 (含英文字幕)
 
 *** bilibili-6.006(2011)新课程
 
-1. https://www.bilibili.com/video/av34605246?from=search&seid=13752376085478972861
-2. https://www.kanbilibili.com/video/av8481187/index_1.html (含英文字幕)
+https://www.bilibili.com/video/av8481187?p=4 (含英文字幕)
 
 ** 说明
 
