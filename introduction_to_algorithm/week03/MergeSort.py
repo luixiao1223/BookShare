@@ -2,7 +2,7 @@
 def MergeSort(lists):
     if len(lists) <= 1:
         return lists
-    middle = len(lists)//2
+    middle = len(lists)//2  #//表示整数除法
     left = MergeSort(lists[:middle])
     right = MergeSort(lists[middle:])
     return merge(left, right)
