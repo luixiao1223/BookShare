@@ -1,0 +1,57 @@
+#+TITLE: 提纲
+
+* 优选队列
+
+1. 例子计算机任务调度的优先队列
+2. 接受操作
+3. 实现--引出--Heap
+
+* Heap介绍
+
+1. 大对，小堆。
+2. 逻辑形式，存储形式
+
+* 基本操作
+
+1. parent
+2. left child
+3. right child
+
+* Heap Operations
+
+概要介绍下下面的操作，详细介绍在后面
+
+1. 构建堆
+2. heapify
+3. insert
+4. extract-max
+5. heapsort
+
+最基本的操作 *heapify* 
+
+* Heapify
+
+具体例子
+
+* python代码
+
+时间复杂度 $lg(n)$
+
+* 建堆
+
+1. 目的，把任意一个数组变成堆。
+2. 如何确定倒数第一个非叶子节点。
+3. from $n/2$ to 1 调用max-heapify
+4. 分析时间复杂度
+5. 看代码
+
+* heap-sorts
+
+1. 直接讲例子
+2. 分析时间复杂度
+3. 看代码
+
+* 思考题
+
+用堆来写一个优先队列。
+
