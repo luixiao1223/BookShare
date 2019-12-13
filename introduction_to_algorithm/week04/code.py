@@ -13,7 +13,6 @@ def Left(k):
 def Right(k):
     if k < 0:
         return None
-
     return k*2+2
 
 
