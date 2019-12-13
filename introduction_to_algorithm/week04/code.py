@@ -53,7 +53,7 @@ def Build_Max_Heap(data):
 
 
 def Heap_Sort(data):
-    Build_Max_Heap(data)
+    Build_Max_Heap(data)  # 建堆O(n)
 
     size = len(data)
     cursor = size - 1
