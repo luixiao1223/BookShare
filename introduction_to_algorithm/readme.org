@@ -57,6 +57,6 @@ MIT在2011的视频lecture中将《算法导论》分为了两门课程[[https:/
 | [[https://github.com/luixiao1223/BookShare/tree/master/introduction_to_algorithm/week03][Week03]]  | Sevenpin    | 2019-11-25 20:00 |
 | [[https://github.com/luixiao1223/BookShare/tree/master/introduction_to_algorithm][Week04]]  | luixiao1223 | 2019-12-15 20:00 |
 | [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week05]]  | rythmE      | 2020-01-04 20:00 |
-| Week06  | TonyHuiHUI  | 2020-01-18 20:00 |
+| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week06]]  | TonyHuiHUI  | 2020-01-18 20:00 |
 | Week07  | Sevenpin    |                  |
 
