@@ -58,6 +58,24 @@ func worker(name string, keychan chan<- md5Info, wg *sync.WaitGroup) {
 	keychan <- info
 }
 
+func recursive(dirname string, keychan chan<- md5Info, wg *sync.WaitGroup) {
+	entries, err := ioutil.ReadDir(dirname)
+	if err != nil {
+		fmt.Println("Open Dir " + dirname + " error")
+		return
+	}
+
+	for _, entry := range entries {
+		name := entry.Name()
+		if !entry.IsDir() {
+			wg.Add(1)
+			go worker(dirname+"/"+name, keychan, wg)
+		} else {
+			recursive(dirname+"/"+name, keychan, wg)
+		}
+	}
+}
+
 func getinfo(keychan <-chan md5Info, wg *sync.WaitGroup) {
 
 	for info := range keychan {
@@ -86,10 +104,12 @@ func main() {
 	var wg sync.WaitGroup
 
 	for _, entry := range entries {
+		name := entry.Name()
 		if !entry.IsDir() {
-			name := entry.Name()
 			wg.Add(1)
 			go worker(name, keychan, &wg)
+		} else {
+			recursive(path+"/"+name, keychan, &wg)
 		}
 	}
 
