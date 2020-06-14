@@ -62,7 +62,7 @@ MIT在2011的视频lecture中将《算法导论》分为了两门课程[[https:/
 | [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week08]]  | luixiao1223 | 2020-03-28 20:00 |
 | [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week09]]  | TonyHuiHUI  | 2020-04-16 20:00 |
 | [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week10]]  | rythmE      | 2020-05-23 19:00 |
-| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week11]]  | Sevenpin    | 2020-05-13 19:00 |
+| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week11]]  | Sevenpin    | 2020-06-13 19:00 |
 | [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week12]]  | luixiao1223 | 2020-06-20 19:00 |
 
 
