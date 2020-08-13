@@ -50,24 +50,24 @@ MIT在2011的视频lecture中将《算法导论》分为了两门课程[[https:/
 
 * 章节分配
 
-| Chapter | speaker     | time             |
-|---------+-------------+------------------|
-| [[https://github.com/luixiao1223/BookShare/tree/master/introduction_to_algorithm/week01][Week01]]  | luixiao1223 | 2019-11-03 20:00 |
-| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week02]]  | rythmE      | 2019-11-10 20:00 |
-| [[https://github.com/luixiao1223/BookShare/tree/master/introduction_to_algorithm/week03][Week03]]  | Sevenpin    | 2019-11-25 20:00 |
-| [[https://github.com/luixiao1223/BookShare/tree/master/introduction_to_algorithm][Week04]]  | luixiao1223 | 2019-12-15 20:00 |
-| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week05]]  | rythmE      | 2020-01-04 20:00 |
-| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week06]]  | TonyHuiHUI  | 2020-01-18 20:00 |
-| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week07]]  | Sevenpin    | 2020-03-21 20:00 |
-| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week08]]  | luixiao1223 | 2020-03-28 20:00 |
-| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week09]]  | TonyHuiHUI  | 2020-04-16 20:00 |
-| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week10]]  | rythmE      | 2020-05-23 19:00 |
-| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week11]]  | Sevenpin    | 2020-06-13 19:00 |
-| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week12]]  | luixiao1223 | 2020-06-20 19:00 |
-| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week13]]  | TonyHuiHUI  | 2020-07-04 19:00 |
-| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week14]]  | rythmE      | 2020-07-11 19:00 |
-| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week15]]  | Sevenpin    | 2020-08-08 19:00 |
-| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week16]]  | luixiao1223 | 2020-08-15 19:00 |
+| Chapter | subject                                             | speaker     | time             |
+|---------+-----------------------------------------------------+-------------+------------------|
+| [[https://github.com/luixiao1223/BookShare/tree/master/introduction_to_algorithm/week01][Week01]]  | Algorithmic thinking, peak finding                  | luixiao1223 | 2019-11-03 20:00 |
+| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week02]]  | Models of computation, document distance            | rythmE      | 2019-11-10 20:00 |
+| [[https://github.com/luixiao1223/BookShare/tree/master/introduction_to_algorithm/week03][Week03]]  | Insertion sort, merge sort                          | Sevenpin    | 2019-11-25 20:00 |
+| [[https://github.com/luixiao1223/BookShare/tree/master/introduction_to_algorithm][Week04]]  | Heaps and heap sort                                 | luixiao1223 | 2019-12-15 20:00 |
+| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week05]]  | Binary search trees, BST sort                       | rythmE      | 2020-01-04 20:00 |
+| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week06]]  | AVL trees, AVL sort                                 | TonyHuiHUI  | 2020-01-18 20:00 |
+| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week07]]  | Counting sort, radix sort, lower bounds for sorting | Sevenpin    | 2020-03-21 20:00 |
+| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week08]]  | Hashing with chaining                               | luixiao1223 | 2020-03-28 20:00 |
+| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week09]]  | Table doubling, Karp-Rabin                          | TonyHuiHUI  | 2020-04-16 20:00 |
+| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week10]]  | Open addressing, cryptographic hashing              | rythmE      | 2020-05-23 19:00 |
+| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week11]]  | Integer arithmetic, Karatsuba multiplication        | Sevenpin    | 2020-06-13 19:00 |
+| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week12]]  | Square roots, Newton's method                       | luixiao1223 | 2020-06-20 19:00 |
+| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week13]]  | Breadth-first search                                | TonyHuiHUI  | 2020-07-04 19:00 |
+| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week14]]  | Depth-first search (DFS), topological sorting       | rythmE      | 2020-07-11 19:00 |
+| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week15]]  | Single-source shortest paths problem                | Sevenpin    | 2020-08-08 19:00 |
+| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week16]]  | Dijkstra                                            | luixiao1223 | 2020-08-15 19:00 |
 
 
 
