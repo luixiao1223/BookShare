@@ -68,6 +68,8 @@ MIT在2011的视频lecture中将《算法导论》分为了两门课程[[https:/
 | [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week14]]  | Depth-first search (DFS), topological sorting       | rythmE      | 2020-07-11 19:00 |
 | [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week15]]  | Single-source shortest paths problem                | Sevenpin    | 2020-08-08 19:00 |
 | [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week16]]  | Dijkstra                                            | luixiao1223 | 2020-08-15 19:00 |
+| [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week17]]  | Bellman-Ford                                        | TonyHuiHUI  | 2020-08-22 19:00 |
+
 
 
 
