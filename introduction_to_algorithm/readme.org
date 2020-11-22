@@ -71,7 +71,8 @@ MIT在2011的视频lecture中将《算法导论》分为了两门课程[[https:/
 | [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week17]]  | Bellman-Ford                                        | TonyHuiHUI  | 2020-08-29 19:00 |
 | [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week18]]  | Speeding up Dijkstra                                | rythmE      | 2020-09-19 19:00 |
 | [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week19]]  | Dynamic programming I: Fibonacci, shortest paths    | Sevenpin    | 2020-09-26 19:00 |
-|         |                                                     |             |                  |
+| Week20  | Dynamic programming II                              | luixiao1223 | 2020-11-21 18:30 |
+| Week21  | ynamic programming III                              |             |                  |
 
 
 
