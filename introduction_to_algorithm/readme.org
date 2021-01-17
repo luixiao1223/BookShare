@@ -2,9 +2,9 @@
 
 * 时间
 
-|       From | To |
-|------------+----|
-| 2019-11-03 |    |
+|       From |      To |
+|------------+---------|
+| 2019-11-03 | 2021-01 |
 
 * 学习资源
 
@@ -72,7 +72,8 @@ MIT在2011的视频lecture中将《算法导论》分为了两门课程[[https:/
 | [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week18]]  | Speeding up Dijkstra                                | rythmE      | 2020-09-19 19:00 |
 | [[https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/lecture-notes/][Week19]]  | Dynamic programming I: Fibonacci, shortest paths    | Sevenpin    | 2020-09-26 19:00 |
 | Week20  | Dynamic programming II                              | luixiao1223 | 2020-11-21 18:30 |
-| Week21  | Dynamic programming III                             |     TonyHuiHUI        |        2020-12-17 19:00          |
+| Week21  | Dynamic programming III                             | TonyHuiHUI  | 2020-12-17 19:00 |
+| Week22  | Dynamic programming IV                              | rythmE      | 2021-01          |
 
 
 
