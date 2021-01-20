@@ -4,3 +4,4 @@
 * [[https://github.com/luixiao1223/BookShare/tree/master/tensorflow_google][tensorflow 实战google深度学习框架]]
 * [[https://github.com/luixiao1223/BookShare/tree/master/real_time_rendering][Real Time Rendering]]
 * [[https://github.com/luixiao1223/BookShare/tree/master/introduction_to_algorithm][算法导论]]
+* 自由主题
