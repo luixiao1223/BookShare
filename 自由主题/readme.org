@@ -8,12 +8,14 @@
 
 * 时间安排
 
-| No. | Subject | Scheduled Time | Status | Speaker     |
-|-----+---------+----------------+--------+-------------|
-|  01 |         |     2021-02-27 |        | Sevenpin    |
-|  02 | Taichi  |     2021-03-06 |        | liuxiao1223 |
-|     |         |                |        |             |
+| No. | Subject            | Scheduled Time | Status | Speaker     |
+|-----+--------------------+----------------+--------+-------------|
+|  01 | projects on github |     2021-02-27 | Done   | Sevenpin    |
+|  02 | Taichi             |     2021-03-06 |        | liuxiao1223 |
+|     |                    |                |        |             |
 
 * 主题安排
 
-** Next...
+** projects on github
+
+** Taichi
