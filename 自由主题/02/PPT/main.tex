@@ -7,6 +7,7 @@
 \usepackage{bm}
 \usepackage{pdfrender}
 \usepackage{tikz}
+\usepackage{tcolorbox}
 \usepackage{xcolor}
 \usepackage{multimedia}
 \usepackage[normal,tight,center]{subfigure}
@@ -16,7 +17,7 @@
 \usetheme{lankton-keynote}
 
 
-\author[frame work]{Taichi}
+\author[frame work]{https://github.com/taichi-dev/taichi}
 
 \title[taichi\hspace{2em}\insertframenumber/\inserttotalframenumber]{Taichi}
 
@@ -31,11 +32,162 @@
 \begin{frame}
   \frametitle{Content}
   \begin{enumerate}
-  \item[10.1] \textcolor{red}{Sequences}
+  \item \textcolor{red}{Installation}
+  \item Initialization
+  \item Data types
+  \item Kernels
+  \item Functions
+  \item Parallel for-loops
+  \item Range-for loops
+  \item Struct-for loops
+  \item Atomic Operations
+  \item Taichi-scope v.s. Python-scope
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Installation}
+  Taichi can be installed via pip on 64-bit Python 3.6,3.7,3.8
+  \begin{tcolorbox}
+\begin{verbatim}
+ pip install taichi
+\end{verbatim}
+  \end{tcolorbox}
+
+  \begin{itemize}
+  \item Taichi supports Windows, Linux, and OS X
+  \item Taichi runs on both CPUs and GPUs (CUDA,OpenGL,Apple Metal).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Content}
+  \begin{enumerate}
+  \item Installation
+  \item \textcolor{red}{Initialization}
+  \item Data types
+  \item Kernels
+  \item Functions
+  \item Parallel for-loops
+  \item Range-for loops
+  \item Struct-for loops
+  \item Atomic Operations
+  \item Taichi-scope v.s. Python-scope
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Initialization}
+
+  \begin{tcolorbox}
+\begin{verbatim}
+ti.init(arch=ti.cuda)
+\end{verbatim}
+  \end{tcolorbox}
+
+  \begin{itemize}
+  \item ti.x64[arm,cuda,opengl,metal]: stick to a certain backend.
+  \item ti.cpu (default)
+  \item ti.gpu[cuda,metal,opengl]
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Content}
+  \begin{enumerate}
+  \item Installation
+  \item Initialization
+  \item \textcolor{red}{Data types}
+  \item Kernels
+  \item Functions
+  \item Scalar math
+  \item Matrices and linear algebra
+  \item Parallel for-loops
+  \item Range-for loops
+  \item Struct-for loops
+  \item Atomic Operations
+  \item Taichi-scope v.s. Python-scope
   \end{enumerate}
 \end{frame}
 
 
+\begin{frame}[fragile]
+  \frametitle{Data types}
+  \begin{tcolorbox}
+\begin{verbatim}
+ti.i8/i16/i32/i64
+ti.u8/u16/u32/u64
+ti.f32/f64
+\end{verbatim}
+  \end{tcolorbox}
+  \begin{itemize}
+  \item \textcolor{green}{tensors}
+    \begin{itemize}
+    \item scalar: ti.field
+    \item vector: ti.Vector
+    \item matrix: ti.Matrix
+    \end{itemize}
+  \end{itemize}
+  eg: ex01.py
+\end{frame}
+
+\begin{frame}
+  \frametitle{Content}
+  \begin{enumerate}
+  \item Installation
+  \item Initialization
+  \item Data types
+  \item \textcolor{red}{Kernels}
+  \item Functions
+  \item Parallel for-loops
+  \item Range-for loops
+  \item Struct-for loops
+  \item Atomic Operations
+  \item Taichi-scope v.s. Python-scope
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Kernels}
+  \textcolor{green}{Computation resides in kernels.}
+  \begin{itemize}
+  \item compiled, 
+  \item statically-typed, 
+  \item parallel 
+  \item differentiable
+  \end{itemize}
+  eg: ex02.py
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Content}
+  \begin{enumerate}
+  \item Installation
+  \item Initialization
+  \item Data types
+  \item Kernels
+  \item \textcolor{red}{Functions}
+  \item Parallel for-loops
+  \item Range-for loops
+  \item Struct-for loops
+  \item Atomic Operations
+  \item Taichi-scope v.s. Python-scope
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Functions}
+  \begin{itemize}
+  \item Taichi functions can be called by Taichi kernels and other Taichi functions
+  \item Taichi functions will be force-inlined
+  \end{itemize}
+
+  eg: ex03.py
+
+  
+\end{frame}
 
 \end{CJK}
 \end{document}
