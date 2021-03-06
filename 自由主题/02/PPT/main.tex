@@ -201,9 +201,67 @@ ti.f32/f64
   \end{itemize}
 
   For loops at the outermost scope in a Taichi kernel are \textcolor{red}{automatically parallelized}.\newline\newline
-  \boxed{eg: ex04.py}
+  \begin{itemize}
+  \item range-for loop :\boxed{eg: ex04.py}
+  \item struct-for loop:\boxed{eg: ex05.py}
+  \end{itemize}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Content}
+  \begin{enumerate}
+  \item Installation
+  \item Initialization
+  \item Data types
+  \item Kernels
+  \item Functions
+  \item loops
+  \item \textcolor{red}{Atomic Operations}
+  \item Taichi-scope v.s. Python-scope
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Atomic Operations}
+  In Taichi, augmented assignments are automatically atomic
+  \begin{tcolorbox}
+\begin{verbatim*}
+x[i] += 1
+x[i] -= 1
+x[i] *= 2
+x[i] /= 2
+...
+\end{verbatim*}
+  \end{tcolorbox}
+
+  \boxed{eg:ex06.py}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Content}
+  \begin{enumerate}
+  \item Installation
+  \item Initialization
+  \item Data types
+  \item Kernels
+  \item Functions
+  \item loops
+  \item Atomic Operations
+  \item \textcolor{red}{Taichi-scope v.s. Python-scope}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Taichi-scope v.s. Python-scope}
+  \begin{itemize}
+  \item \textcolor{green}{Taichi-scope}: Everything decorated with ti.kernel and ti.func.\newline
+  \item \textcolor{red}{Python-scope}: Code outside the Taichi-scope.\newline
+  \end{itemize}
+  \begin{enumerate}
+  \item Code in Taichi-scope will be compiled by the Taichi compiler and run on parallel devices.\newline
+  \item Code in Python-scope is simply Python code and will be executed by the Python interpreter.
+  \end{enumerate}
+\end{frame}
 
 \end{CJK}
 \end{document}
