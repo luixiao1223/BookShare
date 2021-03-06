@@ -37,9 +37,8 @@
   \item Data types
   \item Kernels
   \item Functions
-  \item Parallel for-loops
-  \item Range-for loops
-  \item Struct-for loops
+  
+  \item Loops
   \item Atomic Operations
   \item Taichi-scope v.s. Python-scope
   \end{enumerate}
@@ -68,9 +67,8 @@
   \item Data types
   \item Kernels
   \item Functions
-  \item Parallel for-loops
-  \item Range-for loops
-  \item Struct-for loops
+    
+  \item Loops
   \item Atomic Operations
   \item Taichi-scope v.s. Python-scope
   \end{enumerate}
@@ -101,11 +99,7 @@ ti.init(arch=ti.cuda)
   \item \textcolor{red}{Data types}
   \item Kernels
   \item Functions
-  \item Scalar math
-  \item Matrices and linear algebra
-  \item Parallel for-loops
-  \item Range-for loops
-  \item Struct-for loops
+  \item Loops
   \item Atomic Operations
   \item Taichi-scope v.s. Python-scope
   \end{enumerate}
@@ -129,7 +123,7 @@ ti.f32/f64
     \item matrix: ti.Matrix
     \end{itemize}
   \end{itemize}
-  eg: ex01.py
+  \boxed{eg: ex01.py}
 \end{frame}
 
 \begin{frame}
@@ -140,9 +134,7 @@ ti.f32/f64
   \item Data types
   \item \textcolor{red}{Kernels}
   \item Functions
-  \item Parallel for-loops
-  \item Range-for loops
-  \item Struct-for loops
+  \item Loops
   \item Atomic Operations
   \item Taichi-scope v.s. Python-scope
   \end{enumerate}
@@ -157,7 +149,7 @@ ti.f32/f64
   \item parallel 
   \item differentiable
   \end{itemize}
-  eg: ex02.py
+  \boxed{eg: ex02.py}
   
 \end{frame}
 
@@ -169,9 +161,7 @@ ti.f32/f64
   \item Data types
   \item Kernels
   \item \textcolor{red}{Functions}
-  \item Parallel for-loops
-  \item Range-for loops
-  \item Struct-for loops
+  \item loops
   \item Atomic Operations
   \item Taichi-scope v.s. Python-scope
   \end{enumerate}
@@ -184,10 +174,36 @@ ti.f32/f64
   \item Taichi functions will be force-inlined
   \end{itemize}
 
-  eg: ex03.py
+  \boxed{eg: ex03.py}
 
   
 \end{frame}
+
+\begin{frame}
+  \frametitle{Content}
+  \begin{enumerate}
+  \item Installation
+  \item Initialization
+  \item Data types
+  \item Kernels
+  \item Functions
+  \item \textcolor{red}{loops}
+  \item Atomic Operations
+  \item Taichi-scope v.s. Python-scope
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Loops}
+  \begin{itemize}
+  \item Range-for Loops:which are no different from Python for loops, except that it will be parallelized when used at the outermost scope. Range-for loops can be nested.\newline
+  \item Struct-for loops: which iterates over (sparse) tensor elements\newline
+  \end{itemize}
+
+  For loops at the outermost scope in a Taichi kernel are \textcolor{red}{automatically parallelized}.\newline\newline
+  \boxed{eg: ex04.py}
+\end{frame}
+
 
 \end{CJK}
 \end{document}
